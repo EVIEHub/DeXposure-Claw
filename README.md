@@ -1,4 +1,4 @@
-# DeXposure Claw
+# DeXposure-Claw
 
 DeXposure Claw is a lightweight agent-runtime extension for the DeXposure
 DeFi risk-monitoring project. It provides a `dexposure-claw` CLI and a
