@@ -8,6 +8,8 @@ other MCP-compatible runtimes.
 Claw is a research and monitoring extension. It does not execute trades, sign
 transactions, custody assets, or provide investment advice.
 
+Detailed report: [https://arxiv.org/pdf/2606.19501](https://arxiv.org/pdf/2606.19501)
+
 ## Project State
 
 This repository is an alpha runtime package. The current release target is
@@ -147,3 +149,18 @@ The smoke-test boundary is intentionally small: it verifies package syntax,
 CLI health output, MCP initialization, MCP `tools/list`, and npm packaging. It
 does not verify DeXposure-Bench execution because benchmark execution is not
 implemented in this package yet.
+
+
+
+## Citation
+
+If you use this code in your research, please cite:
+
+```
+@techreport{shu2026dexposure,
+  title={DeXposure-Claw: An Agentic System for DeFi Risk Supervision},
+  author={Shu, Aijie and Chen, Bowei and Wu, Wenbin and Chen, Cathy Yi-Hsuan and He, Fengxiang},
+  year={2026},
+  institution={arXiv. org}
+}
+
