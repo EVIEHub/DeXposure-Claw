@@ -1,11 +1,11 @@
 # DeXposure-Claw
 
-DeXposure Claw is a lightweight agent-runtime extension for the DeXposure
+DeXposure-Claw is a lightweight agent-runtime extension for the DeXposure
 DeFi risk-monitoring project. It provides a `dexposure-claw` CLI and a
 dependency-free stdio MCP server for Claude Code, OpenAI Codex, Hermes, and
 other MCP-compatible runtimes.
 
-Claw is a research and monitoring extension. It does not execute trades, sign
+DeXposure-Claw is a research and monitoring extension. It does not execute trades, sign
 transactions, custody assets, or provide investment advice.
 
 Detailed report: [https://arxiv.org/pdf/2606.19501](https://arxiv.org/pdf/2606.19501)
