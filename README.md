@@ -36,6 +36,20 @@ For agent-runtime users, npm is the most convenient entrypoint. The npm package
 ships a Node.js binary that starts the Claw Python runtime under the hood, so it
 requires Node.js 18+ and Python 3.10+.
 
+Install from GitHub before the package is published to npm:
+
+```bash
+npm install -g git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git
+dexposure-claw health
+```
+
+Run without a global install:
+
+```bash
+npm exec --yes --package git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git -- dexposure-claw health
+npm exec --yes --package git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git -- dexposure-claw mcp
+```
+
 From the repository root:
 
 ```bash
@@ -111,6 +125,12 @@ With the npm package, clients can use:
 
 ```bash
 codex mcp add dexposure -- npx -y @dexposure/claw mcp
+```
+
+Before npm publishing, clients with GitHub SSH access can use:
+
+```bash
+codex mcp add dexposure -- npm exec --yes --package git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git -- dexposure-claw mcp
 ```
 
 ## Package Checks
