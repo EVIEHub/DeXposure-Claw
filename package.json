@@ -1,0 +1,54 @@
+{
+  "name": "@dexposure/claw",
+  "version": "0.1.0",
+  "description": "Pluggable financial-risk agent extension for Claude Code, Hermes, Codex, and MCP-compatible runtimes.",
+  "type": "commonjs",
+  "bin": {
+    "dexposure-claw": "bin/dexposure-claw.js"
+  },
+  "scripts": {
+    "health": "node bin/dexposure-claw.js health",
+    "mcp": "node bin/dexposure-claw.js mcp",
+    "pack:check": "npm pack --dry-run",
+    "test": "python3 -m unittest discover -s tests",
+    "check": "python3 -m compileall src/dexposure_claw && npm test && node --check bin/dexposure-claw.js && npm run pack:check"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "src/dexposure_claw/**/*.py",
+    "src/dexposure_claw/py.typed",
+    "pack/",
+    "adapters/",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "pyproject.toml",
+    "README.md",
+    "package.json",
+    "!**/__pycache__/",
+    "!**/*.pyc"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EVIEHub/DeXposure-Claw/issues"
+  },
+  "homepage": "https://github.com/EVIEHub/DeXposure-Claw#readme",
+  "keywords": [
+    "agent",
+    "mcp",
+    "defi",
+    "risk",
+    "dexposure"
+  ],
+  "license": "Apache-2.0"
+}

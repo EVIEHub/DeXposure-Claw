@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dexposure-claw"
+version = "0.1.0"
+description = "Pluggable financial-risk agent extension for DeXposure-Bench"
+requires-python = ">=3.10"
+dependencies = []
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "DeXposure Team" }]
+keywords = ["agent", "mcp", "defi", "risk", "dexposure"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+]
+
+[project.scripts]
+dexposure-claw = "dexposure_claw.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/EVIEHub/DeXposure-Claw"
+Issues = "https://github.com/EVIEHub/DeXposure-Claw/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+dexposure_claw = ["py.typed"]

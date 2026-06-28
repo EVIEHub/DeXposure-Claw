@@ -1,0 +1,48 @@
+name: Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Compile Python package
+        run: python -m compileall src/dexposure_claw
+
+      - name: Run unit smoke tests
+        run: python -m unittest discover -s tests
+
+      - name: Check Node entrypoint syntax
+        run: node --check bin/dexposure-claw.js
+
+      - name: Check Python CLI health
+        run: PYTHONPATH=src DEXPOSURE_CLAW_ROOT="$PWD" python -m dexposure_claw.cli health
+
+      - name: Check Node CLI health
+        run: node bin/dexposure-claw.js health
+
+      - name: Check MCP initialize and tools list
+        run: |
+          {
+            printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
+            printf '%s\n' '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+          } | PYTHONPATH=src DEXPOSURE_CLAW_ROOT="$PWD" python -m dexposure_claw.cli mcp
+
+      - name: Check npm package contents
+        run: npm run pack:check
