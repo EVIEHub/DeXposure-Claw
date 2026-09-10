@@ -1,0 +1,308 @@
+"""Source-level integrity checks for the DeXposure-Agent experiments.
+
+These tests intentionally avoid project dependencies such as pydantic, torch,
+and scipy so they can run in a bare Python environment before the full
+experiment stack is installed.
+"""
+from __future__ import annotations
+
+import importlib
+import pathlib
+import json
+import subprocess
+import sys
+import tempfile
+import types
+import unittest
+from unittest import mock
+
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+AGENT_ROOT = REPO_ROOT / "paper"
+
+
+def read(relative_path: str) -> str:
+    return (AGENT_ROOT / relative_path).read_text()
+
+
+def import_run_all():
+    if str(AGENT_ROOT) not in sys.path:
+        sys.path.insert(0, str(AGENT_ROOT))
+    return importlib.import_module("experiments.run_all")
+
+
+class ExperimentIntegrityTests(unittest.TestCase):
+    def test_prediction_helper_fails_closed_instead_of_proxying_to_persistence(self):
+        source = read("experiments/predict_helper.py")
+
+        self.assertNotIn("Others: Persistence proxy", source)
+        self.assertNotIn("using persistence", source)
+        self.assertIn("PredictionUnavailable", source)
+
+    def test_evolvegcn_predictor_does_not_fallback_to_persistence(self):
+        source = read("experiments/competitors/evolvegcn.py")
+
+        self.assertNotIn("using persistence", source)
+        self.assertNotIn("return current_snapshot", source)
+
+    def test_b1_uses_shared_prediction_helper(self):
+        source = read("experiments/b1_risk_forecasting.py")
+
+        self.assertNotIn("_PROXY_METHODS", source)
+        self.assertNotIn("def _predict_graph", source)
+        self.assertIn("from experiments.predict_helper import predict_graph", source)
+
+    def test_llm_prompt_declares_conservative_action_constraints(self):
+        source = read("experiments/llm_eval_b5.py")
+
+        self.assertIn("Recommend-Reduce requires", source)
+        self.assertIn("Contingency requires", source)
+        self.assertIn("apply_action_gate", source)
+
+    def test_llm_judge_does_not_compare_against_empty_rule_context(self):
+        source = read("experiments/llm_eval_b5.py")
+
+        self.assertNotIn("REPORT A (baseline rule-engine output", source)
+        self.assertNotIn("truly_stressed, set(), primary", source)
+
+    def test_crisis_comparison_freezes_one_explicit_fm_pi_min(self):
+        source = (REPO_ROOT / "paper/scripts/run_fm_vs_persistence_crisis.py").read_text()
+
+        self.assertIn("DEXPOSURE_FM_PI_MIN", source)
+        self.assertIn("def _frozen_config", source)
+        self.assertEqual(source.count("predict_graph(method, snap_t, horizon=h, config=config)"), 2)
+        self.assertIn("pi_min=config.pi_min", source)
+
+    def test_crisis_decision_metrics_align_predictions_labels_and_uncertainty(self):
+        source = (REPO_ROOT / "paper/scripts/run_fm_vs_persistence_crisis.py").read_text()
+
+        self.assertNotIn("STRESS_LOOKAHEAD", source)
+        self.assertNotIn("_aggregate_scenarios", source)
+        self.assertIn("gt = _future_snapshot(snap_t.date, h, all_dates, date_to_snap)", source)
+        self.assertIn("prediction_horizon=h", source)
+        self.assertIn("label_horizon=h", source)
+        self.assertIn("_calibrate_mc_sigma(loader, test_split, horizon=h)", source)
+        self.assertIn("run_scenarios(pred, mc, config, horizon=h)", source)
+
+    def test_a6_crisis_metrics_are_stratified_by_matching_horizon(self):
+        source = (REPO_ROOT / "paper/scripts/run_supplementary_ablations.py").read_text()
+        a6_source = source.split("def run_a6_crisis(", 1)[1].split(
+            "# EXPERIMENT 3", 1
+        )[0]
+
+        self.assertNotIn("_aggregate_scenarios", a6_source)
+        self.assertIn("future_idx = t_idx + horizon", a6_source)
+        self.assertIn("prediction_horizon=horizon", a6_source)
+        self.assertIn("label_horizon=horizon", a6_source)
+        self.assertIn("_calibrate_mc_sigma(loader, test_split, horizon=horizon)", a6_source)
+        self.assertIn("horizons = [1, 4, 8, 12]", a6_source)
+
+    def test_b2_is_marked_as_shared_heuristic_not_method_comparison(self):
+        b2_source = read("experiments/b2_early_warning.py")
+        run_all_source = read("experiments/run_all.py")
+        runner_source = read("scripts/run_benchmarks_sequential.py")
+        methods_source = read("experiments/methods.py")
+
+        self.assertIn('APPLICABLE_METHODS = {"h1_weighted_degree"}', b2_source)
+        self.assertIn('"h1_weighted_degree": MethodSpec', methods_source)
+        self.assertIn('label="WeightedDegreeHeuristic"', methods_source)
+        self.assertIn('"b2_warning": {"h1_weighted_degree"}', run_all_source)
+        self.assertIn('"run_b2", ["h1_weighted_degree"]', runner_source)
+
+    def test_master_runner_uses_canonical_methods_and_structured_results(self):
+        source = read("experiments/run_all.py")
+
+        self.assertIn("from experiments.methods import", source)
+        self.assertNotIn("METHOD_NAMES = {", source)
+        self.assertNotIn("str(r) for r in results", source)
+        self.assertNotIn('("ablations", "m5_fm_rules")', source)
+        self.assertIn("traceback.format_exc", source)
+        self.assertIn("wall_seconds", source)
+        self.assertIn("git_commit", source)
+        self.assertIn("DGLBACKEND", source)
+        self.assertIn("ALL DONE", source)
+
+    def test_master_runner_uses_prediction_unavailable_type_not_name_matching(self):
+        source = read("experiments/run_all.py")
+
+        self.assertIn("from experiments.exceptions import PredictionUnavailable", source)
+        self.assertIn("isinstance(exc, PredictionUnavailable)", source)
+        self.assertNotIn("UNAVAILABLE_EXCEPTION_NAMES", source)
+        self.assertIn("Unavailable predictor exceptions are registered", source)
+        self.assertIn("experiments.predict_helper", source)
+
+    def test_master_runner_serializes_non_finite_floats_explicitly(self):
+        run_all = import_run_all()
+
+        payload = run_all._jsonify(
+            {"nan": float("nan"), "pos": float("inf"), "neg": float("-inf")}
+        )
+
+        self.assertEqual(payload, {"nan": "nan", "pos": "+inf", "neg": "-inf"})
+
+    def test_benchmark_writer_serializes_undefined_metrics_as_json_null(self):
+        from experiments.exp_logger import json_safe
+
+        payload = json_safe(
+            {"nan": float("nan"), "pos": float("inf"), "nested": [1.0]}
+        )
+        self.assertEqual(payload, {"nan": None, "pos": None, "nested": [1.0]})
+        self.assertNotIn("NaN", json.dumps(payload, allow_nan=False))
+
+    def test_master_runner_does_not_expand_unknown_object_dicts(self):
+        run_all = import_run_all()
+
+        class UnknownObject:
+            def __init__(self):
+                self.secret_internal_state = "do-not-serialize"
+
+            def __repr__(self):
+                return "<UnknownObject>"
+
+        self.assertEqual(run_all._jsonify(UnknownObject()), "<UnknownObject>")
+
+    def test_master_runner_classifies_prediction_unavailable_separately(self):
+        run_all = import_run_all()
+
+        def fake_run(**kwargs):
+            raise run_all.PredictionUnavailable("missing checkpoint")
+
+        fake_module = types.SimpleNamespace(run_fake=fake_run)
+
+        with mock.patch.object(run_all.importlib, "import_module", return_value=fake_module):
+            with mock.patch.dict(run_all.BENCHMARK_MODULES, {"bx_test": "fake.module"}):
+                with mock.patch.dict(run_all.BENCHMARK_FUNCS, {"bx_test": "run_fake"}):
+                    result = run_all._run_benchmark(
+                        "bx_test",
+                        "m3_evolvegcn",
+                        data_dir="data/",
+                        test_split="2025-01~2025-08",
+                        results_dir=AGENT_ROOT / "results",
+                    )
+
+        self.assertEqual(result["status"], "unavailable")
+        self.assertEqual(result["exception_type"], "PredictionUnavailable")
+
+    def test_master_runner_continues_after_unavailable_or_not_implemented(self):
+        run_all = import_run_all()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(run_all, "_setup_logger", return_value=pathlib.Path(tmp) / "run.log"):
+                with mock.patch.object(run_all, "_collect_metadata", return_value={}):
+                    with mock.patch.object(run_all, "_write_state"):
+                        with mock.patch.object(
+                            run_all,
+                            "_run_benchmark",
+                            side_effect=[
+                                {"status": "not_implemented"},
+                                {"status": "unavailable"},
+                                {"status": "ok"},
+                            ],
+                        ) as run_benchmark:
+                            code = run_all.main(
+                                [
+                                    "--benchmarks",
+                                    "b1_forecast",
+                                    "--methods",
+                                    "m3_evolvegcn,m4_fm_only,m5_fm_rules",
+                                    "--output",
+                                    tmp,
+                                ]
+                            )
+
+        self.assertEqual(code, 1)
+        self.assertEqual(run_benchmark.call_count, 3)
+
+    def test_artifact_builders_do_not_reference_deleted_legacy_runs(self):
+        for relative_path in (
+            "scripts/build_table3_and_fig4.py",
+            "scripts/build_task1_artifacts.py",
+        ):
+            source = read(relative_path)
+            self.assertNotIn("202603", source)
+            self.assertNotIn("20260409", source)
+            self.assertIn("latest", source)
+
+    def test_task2_figure_tells_layer_contribution_story(self):
+        script_source = read("scripts/build_table3_and_fig4.py")
+        exp_source = read("sections/6-Exp.tex")
+
+        self.assertIn("Layer-wise Contribution", script_source)
+        self.assertIn("Ticket F1", script_source)
+        self.assertIn("Judge Score", script_source)
+        self.assertIn("m2_snapshot_llm", script_source)
+        self.assertIn("m5_fm_rules", script_source)
+        self.assertIn("layer-wise contribution", exp_source)
+        self.assertNotIn(
+            "precision, stability, and cost-adjusted score",
+            exp_source,
+        )
+        self.assertNotIn("recall--cost trade-off", exp_source)
+        self.assertNotIn("+33%", script_source)
+        self.assertNotIn("+33\\%", exp_source)
+        self.assertIn("32\\%", exp_source)
+
+    def test_task2_table_explains_predictor_only_methods_are_not_applicable(self):
+        table_source = read("sections/T2-MethodComparison.tex")
+
+        self.assertIn("predictor-only", table_source)
+        self.assertIn(r"\texttt{m3\_evolvegcn}", table_source)
+        self.assertIn(r"\texttt{m4\_fm\_only}", table_source)
+        self.assertIn("do not emit supervisory tickets", table_source)
+
+    def test_task1_figure_tells_deployable_fm_signal_story(self):
+        script_source = read("scripts/build_task1_artifacts.py")
+        exp_source = read("sections/6-Exp.tex")
+
+        self.assertIn("Task I: FM Signal Audit", script_source)
+        self.assertIn("TrendCons@h4", script_source)
+        self.assertIn("PI coverage", script_source)
+        self.assertIn("Robust degradation", script_source)
+        self.assertIn("fig5_task1_deployable_signal", script_source)
+        self.assertIn("fig5_task1_deployable_signal", exp_source)
+        self.assertIn("Task~I signal audit", exp_source)
+        self.assertNotIn("fig5_task1_b1_rankcorr", exp_source)
+        self.assertNotIn(
+            "Task~I b1_forecast rank correlation across forecast horizons",
+            exp_source,
+        )
+
+    def test_main_text_matches_experiment_chord_narrative(self):
+        main_source = (REPO_ROOT / "paper" / "DeXposure-Agent.tex").read_text()
+        intro_source = read("sections/1-Intro.tex")
+        exp_source = read("sections/6-Exp.tex")
+        task1_table = read("sections/T1-TaskI_Summary.tex")
+        combined = "\n".join([main_source, intro_source, exp_source, task1_table])
+
+        self.assertIn("Task I evidence ledger", task1_table)
+        self.assertIn("deployable monitor", exp_source)
+        self.assertIn("layer-wise result", exp_source)
+        self.assertIn("PI coverage $0.913$", exp_source)
+        self.assertIn("32\\%", exp_source)
+        self.assertNotIn("+33\\%", combined)
+        self.assertNotIn("+33%", combined)
+        self.assertNotIn("0.913--0.919", combined)
+
+    def test_result_audit_passes_after_old_artifacts_are_removed(self):
+        audit_script = AGENT_ROOT / "experiments" / "audit_results.py"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(audit_script),
+                "--results-dir",
+                str(AGENT_ROOT / "results"),
+                "--format",
+                "json",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        payload = json.loads(result.stdout)
+
+        self.assertEqual(payload["n_issues"], 0)
+        self.assertEqual(payload["issues"], [])
+
+
+if __name__ == "__main__":
+    unittest.main()

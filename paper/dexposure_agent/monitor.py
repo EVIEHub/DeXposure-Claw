@@ -1,0 +1,361 @@
+"""Monitor module for the DeXposure-Agent pipeline.
+
+Implements Section 2.5 of the DeXposure-Agent paper:
+- Phi functionals (network-level risk metrics) computed on predicted GraphSnapshots
+- Rolling baseline comparison via z-scores
+- Alert generation with confidence scoring
+"""
+from __future__ import annotations
+
+import math
+from typing import Any
+
+from dexposure_agent.config import AgentConfig
+from dexposure_agent.types import Alert, GraphSnapshot, MonitorResult
+
+# ---------------------------------------------------------------------------
+# Metric metadata
+# ---------------------------------------------------------------------------
+
+METRIC_NAMES: dict[str, str] = {
+    "N1": "SIS Weighted Degree",
+    "N2": "HHI Concentration",
+    "N3": "Graph Density",
+    "N4": "PageRank Concentration (Gini)",
+    "N5": "Gini Weighted Degree",
+}
+
+
+# ---------------------------------------------------------------------------
+# Helper: Gini coefficient
+# ---------------------------------------------------------------------------
+
+def _gini(values: list[float]) -> float:
+    """Compute Gini coefficient for a list of non-negative values.
+
+    Returns 0.0 for empty or all-zero input.
+    """
+    n = len(values)
+    if n == 0:
+        return 0.0
+    total = sum(values)
+    if total == 0.0:
+        return 0.0
+    sorted_vals = sorted(values)
+    cumsum = 0.0
+    gini_sum = 0.0
+    for i, v in enumerate(sorted_vals):
+        cumsum += v
+        gini_sum += cumsum
+    # Finite-sample Gini. The +1/n term is required for discrete samples.
+    return 1.0 + (1.0 / n) - (2.0 * gini_sum) / (n * total)
+
+
+# ---------------------------------------------------------------------------
+# Helper: simple power-iteration PageRank
+# ---------------------------------------------------------------------------
+
+def _pagerank(
+    nodes: list[str],
+    adjacency: dict[str, dict[str, float]],
+    damping: float = 0.85,
+    iterations: int = 10,
+) -> dict[str, float]:
+    """Compute PageRank using networkx (numpy-backed, much faster than pure Python).
+
+    adjacency[src][tgt] = weight.
+    Graph and numerical failures are surfaced because a uniform fallback would
+    turn an invalid financial metric into an apparently valid observation.
+    """
+    n = len(nodes)
+    if n == 0:
+        return {}
+    try:
+        import networkx as nx
+        G = nx.DiGraph()
+        G.add_nodes_from(nodes)
+        for src, targets in adjacency.items():
+            for tgt, w in targets.items():
+                if tgt in G:
+                    G.add_edge(src, tgt, weight=w)
+        return nx.pagerank(
+            G,
+            alpha=damping,
+            max_iter=max(100, iterations),
+            tol=1e-8,
+            weight="weight",
+        )
+    except ImportError as exc:
+        raise RuntimeError("networkx is required for weighted PageRank") from exc
+
+
+# ---------------------------------------------------------------------------
+# Core: compute_metrics
+# ---------------------------------------------------------------------------
+
+def compute_metrics(graph: GraphSnapshot) -> dict[str, float]:
+    """Compute network-level Phi functionals from a GraphSnapshot.
+
+    Returns a dict mapping metric IDs (N1..N5) to float values.
+    For empty graphs, all metrics are 0.0.
+    """
+    nodes = list(graph.nodes.keys())
+    edges = graph.edges
+    n = len(nodes)
+    num_edges = len(edges)
+
+    if n == 0:
+        return {mid: 0.0 for mid in METRIC_NAMES}
+
+    # Build weighted adjacency and per-node weighted out-degree
+    adjacency: dict[str, dict[str, float]] = {node: {} for node in nodes}
+    weighted_degree: dict[str, float] = {node: 0.0 for node in nodes}
+
+    for edge in edges:
+        if edge.source in adjacency:
+            adjacency[edge.source][edge.target] = (
+                adjacency[edge.source].get(edge.target, 0.0) + edge.weight
+            )
+        if edge.source in weighted_degree:
+            weighted_degree[edge.source] += edge.weight
+
+    degree_values = list(weighted_degree.values())
+    total_weighted_degree = sum(degree_values)
+
+    # N1: SIS — max PageRank (systemic importance of the most important node)
+    pr = _pagerank(nodes, adjacency)
+    pr_values = list(pr.values())
+    n1 = max(pr_values) if pr_values else 0.0
+    n1 = max(0.0, min(1.0, n1))
+
+    # N2: HHI on weighted degrees
+    if total_weighted_degree > 0:
+        n2 = sum((d / total_weighted_degree) ** 2 for d in degree_values)
+    else:
+        n2 = 0.0
+
+    # N3: Directed graph density = E / (N * (N-1))
+    max_possible_edges = n * (n - 1)
+    n3 = num_edges / max_possible_edges if max_possible_edges > 0 else 0.0
+    n3 = max(0.0, min(1.0, n3))
+
+    # N4: PageRank Concentration — Gini of PageRank distribution (pr already computed above)
+    n4 = _gini(pr_values)
+    n4 = max(0.0, min(1.0, n4))
+
+    # N5: Gini of weighted degrees
+    n5 = _gini(degree_values)
+    n5 = max(0.0, min(1.0, n5))
+
+    return {
+        "N1": n1,
+        "N2": n2,
+        "N3": n3,
+        "N4": n4,
+        "N5": n5,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Core: detect_alerts
+# ---------------------------------------------------------------------------
+
+def detect_alerts(
+    current_metrics: dict[str, float],
+    baseline: dict[str, dict[str, float]],
+    horizon: int,
+    config: AgentConfig,
+) -> list[Alert]:
+    """Compare current metric values to rolling baseline and return triggered alerts.
+
+    Args:
+        current_metrics: metric_id -> current value.
+        baseline: metric_id -> {"mean": float, "std": float}.
+        horizon: forecast horizon (weeks).
+        config: AgentConfig with z_threshold.
+
+    Returns:
+        List of Alert objects for metrics exceeding z_threshold.
+    """
+    alerts: list[Alert] = []
+    epsilon = 1e-8
+
+    for metric_id, value in current_metrics.items():
+        if metric_id not in baseline:
+            continue
+        bline = baseline[metric_id]
+        mean = bline["mean"]
+        std = bline["std"]
+        effective_std = max(std, epsilon)
+        z_score = abs(value - mean) / effective_std
+
+        if z_score > config.z_threshold:
+            alerts.append(
+                Alert(
+                    horizon=horizon,
+                    metric_id=metric_id,
+                    metric_name=METRIC_NAMES.get(metric_id, metric_id),
+                    value=value,
+                    baseline_mean=mean,
+                    baseline_std=std,
+                    z_score=z_score,
+                    confidence=0.0,  # Filled in by run_monitor
+                    attribution={},
+                )
+            )
+
+    return alerts
+
+
+# ---------------------------------------------------------------------------
+# Core: compute_confidence
+# ---------------------------------------------------------------------------
+
+def compute_confidence(
+    dh_score: float,
+    dispersion: float,
+    horizon: int,
+    config: AgentConfig,  # noqa: ARG001
+) -> float:
+    """Compute alert confidence score (Eq. 6 in DeXposure-Agent paper).
+
+    C = dh_score * (1 / (1 + dispersion))
+
+    Forecast-horizon uncertainty is represented by the dispersion from a
+    horizon-specific predictive sampling distribution. Applying a second
+    deterministic horizon penalty made the configured gate mathematically
+    unreachable at every supported horizon.
+
+    Clamped to [0, 1].
+    """
+    if horizon <= 0:
+        raise ValueError("horizon must be positive")
+    raw = float(dh_score) * (1.0 / (1.0 + float(dispersion)))
+    return max(0.0, min(1.0, raw))
+
+
+# ---------------------------------------------------------------------------
+# Core: run_monitor
+# ---------------------------------------------------------------------------
+
+def _compute_rolling_baseline(
+    history: list[dict[str, float]],
+    window: int,
+) -> dict[str, dict[str, float]]:
+    """Compute rolling mean/std from a list of metric dicts."""
+    recent = history[-window:]
+    if not recent:
+        return {}
+
+    all_keys: set[str] = set()
+    for entry in recent:
+        all_keys.update(entry.keys())
+
+    baseline: dict[str, dict[str, float]] = {}
+    for key in all_keys:
+        vals = [entry[key] for entry in recent if key in entry]
+        if not vals:
+            continue
+        mean = sum(vals) / len(vals)
+        variance = sum((v - mean) ** 2 for v in vals) / len(vals)
+        std = math.sqrt(variance)
+        baseline[key] = {"mean": mean, "std": std}
+
+    return baseline
+
+
+def _compute_dispersion(
+    metric_id: str,
+    mc_samples: list[GraphSnapshot],
+) -> float | None:
+    """Compute metric dispersion across samples, or ``None`` if unidentified."""
+
+    sample_values: list[float] = []
+    for sample_graph in mc_samples:
+        sample_metrics = compute_metrics(sample_graph)
+        if metric_id in sample_metrics:
+            sample_values.append(sample_metrics[metric_id])
+
+    if len(sample_values) < 2:
+        return None
+
+    mean = sum(sample_values) / len(sample_values)
+    variance = sum((v - mean) ** 2 for v in sample_values) / len(sample_values)
+    std = math.sqrt(variance)
+
+    # Coefficient of variation, clamped to [0, 1]
+    if mean == 0.0:
+        return 0.0
+    cv = std / abs(mean)
+    return max(0.0, min(1.0, cv))
+
+
+def run_monitor(
+    predicted_graph: GraphSnapshot,
+    mc_samples: list[GraphSnapshot],
+    baseline_history: list[Any],
+    horizon: int,
+    config: AgentConfig,
+    dh_score: float = 1.0,
+) -> MonitorResult:
+    """Run the full monitoring pipeline.
+
+    Args:
+        predicted_graph: The forecasted GraphSnapshot for this horizon.
+        mc_samples: MC sampled graphs for uncertainty estimation.
+        baseline_history: List of past metric dicts or GraphSnapshots.
+        horizon: Forecast horizon in weeks.
+        config: AgentConfig.
+        dh_score: Data-health score (default 1.0 if not provided).
+
+    Returns:
+        MonitorResult with alerts and metrics.
+    """
+    # Step 1: Compute metrics on predicted graph
+    current_metrics = compute_metrics(predicted_graph)
+
+    # Step 2: Build baseline
+    if not baseline_history:
+        # First call — no baseline available, no alerts generated
+        baseline: dict[str, dict[str, float]] = {}
+    else:
+        # Normalize baseline_history: may be list of GraphSnapshots or list of metric dicts
+        history_metrics: list[dict[str, float]] = []
+        for entry in baseline_history:
+            if isinstance(entry, GraphSnapshot):
+                history_metrics.append(compute_metrics(entry))
+            elif isinstance(entry, dict):
+                history_metrics.append(entry)
+        baseline = _compute_rolling_baseline(history_metrics, config.rolling_window)
+
+    # Step 3: Detect alerts
+    alerts = detect_alerts(current_metrics, baseline, horizon=horizon, config=config)
+
+    # Step 4: Compute dispersion and confidence for each alert
+    final_alerts: list[Alert] = []
+    for alert in alerts:
+        dispersion = _compute_dispersion(alert.metric_id, mc_samples)
+        # A point forecast does not identify predictive dispersion.  Treating
+        # one sample as zero dispersion would turn missing uncertainty into
+        # maximum certainty and could incorrectly pass the action gate.
+        confidence = (
+            0.0
+            if dispersion is None
+            else compute_confidence(
+                dh_score=dh_score,
+                dispersion=dispersion,
+                horizon=horizon,
+                config=config,
+            )
+        )
+        final_alerts.append(
+            alert.model_copy(update={"confidence": confidence})
+        )
+
+    # Step 5: Build MonitorResult
+    # metrics structure: metric_id -> {horizon: value}
+    metrics_out: dict[str, dict[int, float]] = {
+        mid: {horizon: val} for mid, val in current_metrics.items()
+    }
+
+    return MonitorResult(alerts=final_alerts, metrics=metrics_out)
