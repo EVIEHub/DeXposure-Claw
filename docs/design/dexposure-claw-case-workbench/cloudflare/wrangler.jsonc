@@ -1,0 +1,55 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dexposure-claw",
+  "main": "worker.js",
+  "compatibility_date": "2025-10-01",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*",
+      "/health",
+      "/live-predict",
+      "/assets/live-network-3d.json",
+      "/assets/live-horizons.json",
+      "/assets/live-history.json",
+      "/assets/live-contagion-graph.json",
+      "/assets/icons/*"
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "LIVE_BUCKET",
+      "bucket_name": "dexposure-claw-live"
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "DexposureEngine",
+      "image": "registry.cloudflare.com/f9a1f09d6e5cffcc639e070d743be8dc/dexposure-claw-dexposureengine:fmv4-netflow-20261122b",
+      "instance_type": "standard-4",
+      "max_instances": 2
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "DEXPOSURE_ENGINE",
+        "class_name": "DexposureEngine"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DexposureEngine"]
+    }
+  ],
+  "triggers": {
+    "crons": ["15 1 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

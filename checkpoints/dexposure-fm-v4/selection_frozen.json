@@ -1,0 +1,35 @@
+{
+  "selected": {
+    "1": {
+      "status": "complete",
+      "horizon": 1,
+      "selected_epoch": 23,
+      "completed_epochs": 31,
+      "model_sha256": "fc79295b40c7cfc355b9a3708e2366ed10d8d38bd5a2a1709882af4b46c1b694"
+    },
+    "4": {
+      "status": "complete",
+      "horizon": 4,
+      "selected_epoch": 23,
+      "completed_epochs": 31,
+      "model_sha256": "bb2d9f29cad5d0a7c057ae3520caf4028ffd78d05fef411a469d3943872b9c66"
+    },
+    "8": {
+      "status": "complete",
+      "horizon": 8,
+      "selected_epoch": 23,
+      "completed_epochs": 31,
+      "model_sha256": "5e49654b838de26a55a1dbc8af3c36ba61ac10c90268589a7429fe83ba8df546"
+    },
+    "12": {
+      "status": "complete",
+      "horizon": 12,
+      "selected_epoch": 23,
+      "completed_epochs": 31,
+      "model_sha256": "af4bf4a0489c2ebf73e62fe305b9a47239d14d02225dab7a210e897c85a96392"
+    }
+  },
+  "frozen_at": "2026-11-22T06:57:50.349525+00:00",
+  "selection_data": "pre2025_validation_only",
+  "plan_sha256": "206b2e289beea31655912dbf9f9c74391ddde417fbafe94edf11d633d78e038a"
+}

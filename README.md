@@ -1,166 +1,81 @@
 # DeXposure-Claw
 
-DeXposure-Claw is a lightweight agent-runtime extension for the DeXposure
-DeFi risk-monitoring project. It provides a `dexposure-claw` CLI and a
-dependency-free stdio MCP server for Claude Code, OpenAI Codex, Hermes, and
-other MCP-compatible runtimes.
+DeXposure-Claw is an agentic DeFi systemic-risk monitoring, graph forecasting, and counterfactual contagion workbench built on inter-protocol credit exposure networks.
 
-DeXposure-Claw is a research and monitoring extension. It does not execute trades, sign
-transactions, custody assets, or provide investment advice.
+> Research and supervisory monitoring software only. DeXposure-Claw does not execute trades, sign transactions, custody assets, or provide investment advice.
 
-Detailed report: [https://arxiv.org/pdf/2606.19501](https://arxiv.org/pdf/2606.19501)
+## Repository Structure
 
-## Project State
-
-This repository is an alpha runtime package. The current release target is
-agent-runtime setup, MCP connectivity, and DeXposure-Bench catalog discovery.
-It is not yet a complete benchmark runner.
-
-## Current Capabilities
-
-The current package focuses on runtime setup and benchmark discovery:
-
-| Capability | Status |
-| --- | --- |
-| CLI health check | Available |
-| Claude Code adapter build | Available |
-| MCP stdio server | Available |
-| Install snippets for Hermes, Codex, and generic MCP clients | Available |
-| DeXposure-Bench catalog listing | Available |
-| Direct benchmark execution through MCP | Not implemented |
-| Direct report generation through MCP | Not implemented |
+- `claw/`: Lightweight `dexposure-claw` CLI, stdio MCP server (`dexposure_health`, `dexposure_install_snippet`, `dexposure_list_benchmarks`, `dexposure_live_predict`), and runtime adapters for Claude Code, OpenAI Codex, and Hermes.
+- `paper/dexposure_agent/`: Core risk-monitoring pipeline, live DeFiLlama exposure-network ingestion (`live_defillama.py`, `live_history.py`), DeXposure-FM v3/v4 inference (`fm_v3.py`, `fm_v4.py`), DebtRank-style contagion stress testing (`contagion.py`), confidence-gated supervisory decision logic (`decision.py`), and FastAPI services (`serve.py`, `container_service.py`).
+- `paper/experiments/` & `paper/scripts/`: Benchmark suite (`B1`--`B6`), baseline implementations, walk-forward evaluation, and data-processing scripts.
+- `paper/tests/`: Unit and integration tests for the CLI, MCP server, contagion simulator, token mapper, forecasting interfaces, and API endpoints.
+- `lib/`: Graph foundation model backbones and temporal graph utilities (`graphpfn`, `limix`, `tfm`).
+- `cloud/train_src/`: Model training, sequential rolling evaluation, and hyperparameter tuning code (`train_fm_v3.py`, `train_fm_v4.py`, `tune_fm.py`).
+- `data/mapping/`: Protocol and token-issuer resolution tables used by live ingestion and historical replay.
+- `checkpoints/`: Feature schemas, calibration summaries, and horizon configurations for DeXposure-FM (binary `.pt`/`.ckpt` weights are excluded from Git and loaded locally or from Hugging Face).
+- `docs/design/dexposure-claw-case-workbench/`: Interactive browser workbench and Cloudflare Worker proxy for live exposure networks, historical crisis replay, and contagion stress simulation.
 
 ## Quick Start
 
-### Node.js / npm
+### 1. Lightweight CLI & MCP Server (Zero Heavy Dependencies)
 
-For agent-runtime users, npm is the most convenient entrypoint. The npm package
-ships a Node.js binary that starts the Claw Python runtime under the hood, so it
-requires Node.js 18+ and Python 3.10+.
-
-Install from GitHub before the package is published to npm:
+Requires Python 3.10+ (and Node.js 18+ if invoking via `npm`/`node`):
 
 ```bash
-npm install -g git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git
-dexposure-claw health
+# Python entrypoint
+PYTHONPATH=claw/src python3 -m dexposure_claw.cli health
+PYTHONPATH=claw/src python3 -m dexposure_claw.cli mcp
+
+# Node.js wrapper
+node claw/bin/dexposure-claw.js health
+npm --prefix claw test
 ```
 
-Run without a global install:
+Build the Claude Code plugin bundle or print MCP config snippets:
 
 ```bash
-npm exec --yes --package git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git -- dexposure-claw health
-npm exec --yes --package git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git -- dexposure-claw mcp
+PYTHONPATH=claw/src python3 -m dexposure_claw.cli build claude-code
+PYTHONPATH=claw/src python3 -m dexposure_claw.cli snippet codex
 ```
 
-From the repository root:
+### 2. Full Forecasting, Live Pipeline & Workbench Server
+
+Install Python dependencies (Python 3.12 recommended; see `pyproject.toml`):
 
 ```bash
-npm exec --package . -- dexposure-claw health
-npm exec --package . -- dexposure-claw mcp
+uv sync
 ```
 
-After publishing:
+Run live DeFiLlama exposure ingestion and forecast-grounded analysis:
 
 ```bash
-npx -y @dexposure/claw health
-npx -y @dexposure/claw mcp
+PYTHONPATH=paper:claw/src uv run python -m dexposure_claw.cli live-predict --top-n 30 --horizon 4
 ```
 
-To install globally from a checkout:
+Launch the FastAPI workbench and contagion simulation server:
 
 ```bash
-npm install -g .
-dexposure-claw health
+PYTHONPATH=paper:claw/src uv run python -m dexposure_claw.cli serve --host 127.0.0.1 --port 8000
 ```
 
-### Python
-
-From the repository root:
+### 3. Running Tests
 
 ```bash
-pipx install .
-dexposure-claw install
+# Lightweight CLI & MCP smoke tests
+python3 -m unittest discover -s claw/tests
+
+# Agent, mapper, contagion, and API unit tests
+PYTHONPATH=paper:claw/src uv run pytest -q \
+  paper/tests/test_config.py \
+  paper/tests/test_types.py \
+  paper/tests/test_data_health.py \
+  paper/tests/test_monitor.py \
+  paper/tests/test_pred_graph.py \
+  paper/tests/test_contagion_zero_tvl.py \
+  paper/tests/test_dexposure_claw.py
 ```
 
-For editable local development:
+## License
 
-```bash
-python -m pip install -e .
-dexposure-claw health
-```
-
-## MCP Tools
-
-Start the MCP server with:
-
-```bash
-dexposure-claw mcp
-```
-
-The server currently exposes:
-
-| Tool | Purpose |
-| --- | --- |
-| `dexposure_health` | Check that the DeXposure Claw MCP server is reachable. |
-| `dexposure_install_snippet` | Return install config for Hermes, Codex, or generic MCP clients. |
-| `dexposure_list_benchmarks` | List the six DeXposure-Bench benchmark IDs and readable names. |
-
-## Claude Code
-
-For local development:
-
-```bash
-dexposure-claw build claude-code
-claude --plugin-dir dist/claude-code/dexposure-claw
-```
-
-## OpenAI Codex
-
-Codex consumes DeXposure Claw through MCP:
-
-```bash
-codex mcp add dexposure -- dexposure-claw mcp
-codex mcp get dexposure
-```
-
-With the npm package, clients can use:
-
-```bash
-codex mcp add dexposure -- npx -y @dexposure/claw mcp
-```
-
-Before npm publishing, clients with GitHub SSH access can use:
-
-```bash
-codex mcp add dexposure -- npm exec --yes --package git+ssh://git@github.com/EVIEHub/DeXposure-Claw.git -- dexposure-claw mcp
-```
-
-## Package Checks
-
-Before publishing or opening a package-related pull request, run:
-
-```bash
-python -m compileall src/dexposure_claw
-python -m unittest discover -s tests
-npm run pack:check
-```
-
-The smoke-test boundary is intentionally small: it verifies package syntax,
-CLI health output, MCP initialization, MCP `tools/list`, and npm packaging. It
-does not verify DeXposure-Bench execution because benchmark execution is not
-implemented in this package yet.
-
-
-
-## Citation
-
-If you use this code in your research, please cite:
-
-```
-@techreport{shu2026dexposure,
-  title={DeXposure-Claw: An Agentic System for DeFi Risk Supervision},
-  author={Shu, Aijie and Chen, Bowei and Wu, Wenbin and Chen, Cathy Yi-Hsuan and He, Fengxiang},
-  year={2026},
-  institution={arXiv. org}
-}
-
+Apache-2.0. See `LICENSE` and `NOTICE` (and component licenses under `lib/`) for details.

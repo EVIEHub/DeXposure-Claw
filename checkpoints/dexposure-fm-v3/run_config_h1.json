@@ -1,0 +1,60 @@
+{
+  "artifact_status": "complete",
+  "experiment_kind": "dexposure_fm_v3_stock_monotonic",
+  "model_family": "dexposure_fm_v3",
+  "forecast_horizon_weeks": 1,
+  "holdout_start": "2025-01-01",
+  "validation_weeks": 24,
+  "epochs": 40,
+  "early_stop_patience": 8,
+  "seed": 42,
+  "network_snapshots": 283,
+  "source_sha256": "0e1564b302b46042ae0321bfd6b697328ecee864a1b009f3579a78d5e9320a2c",
+  "selected_epoch": 39,
+  "completed_epochs": 40,
+  "parameters": {
+    "name": "v3_joint_monotonic",
+    "head_lr": 0.0005,
+    "encoder_lr": 3e-05,
+    "weight_decay": 0.0001,
+    "hidden_dim": 256,
+    "dropout": 0.1,
+    "retain_loss_weight": 2.0,
+    "exist_loss_weight": 0.8,
+    "edge_delta_loss_weight": 0.8,
+    "stress_loss_weight": 2.0,
+    "node_delta_loss_weight": 3.0,
+    "downside_asymmetry": 1.5
+  },
+  "calibration": {
+    "calibration_split": "pre2025_validation_only",
+    "retain_nll_before": 0.5533434152603149,
+    "retain_nll_after": 0.5486152172088623,
+    "retain_hazard_scales": [
+      1.4330435991287231,
+      1.1199438571929932,
+      0.7042182087898254,
+      0.8761139512062073
+    ],
+    "stress_nll_before": 0.603706419467926,
+    "stress_nll_after": 0.5948105454444885,
+    "stress_hazard_scales": [
+      1.6806954145431519,
+      0.9831976890563965,
+      0.7054615616798401,
+      0.9693025946617126
+    ],
+    "exist_logit_temps": [
+      1.0990040302276611,
+      1.0998564958572388,
+      1.1425954103469849,
+      1.1610459089279175
+    ],
+    "exist_logit_biases": [
+      0.00400966452434659,
+      0.059705838561058044,
+      0.13006089627742767,
+      0.08986727148294449
+    ]
+  }
+}

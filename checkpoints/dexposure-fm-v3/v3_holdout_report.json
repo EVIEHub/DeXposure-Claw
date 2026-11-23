@@ -1,0 +1,146 @@
+{
+  "h1": {
+    "n_eval_weeks": 32,
+    "global_exist": {
+      "auroc": 0.9930471584952939,
+      "auprc": 0.9883356811557555,
+      "brier": 0.016474404475399308,
+      "ece": 0.0022937636745733563,
+      "mean_pred": 0.4688405022521068,
+      "empirical_rate": 0.4694724313367251
+    },
+    "active_edge_retention": {
+      "auroc": 0.6378713614717744,
+      "auprc": 0.9135421419615133,
+      "brier": 0.11309818778855589,
+      "ece": 0.03014039870206094,
+      "mean_pred": 0.8601069618892934,
+      "empirical_rate": 0.8677276516652772
+    },
+    "node_stress_10pct": {
+      "auroc": 0.6122250723351444,
+      "auprc": 0.2581157472481559,
+      "brier": 0.1509208719190604,
+      "ece": 0.04920159530360252,
+      "mean_pred": 0.19721255582602074,
+      "empirical_rate": 0.184375
+    },
+    "edge_log_stock_mae": 0.4081474244594574,
+    "edge_log_stock_rmse": 1.1806190013885498,
+    "node_log_tvl_mae": 0.2119889259338379,
+    "node_log_tvl_rmse": 0.7088022828102112,
+    "node_tvl_spearman": 0.0915926299157556,
+    "monotonicity_violation_rate": 0.0,
+    "walk_forward_top5_stress_or_5pct_hit_rate": 0.3375,
+    "walk_forward_top7_stress_or_5pct_hit_rate": 0.33035714285714285,
+    "walk_forward_top7_directional_contraction_rate": 0.5133928571428571
+  },
+  "h4": {
+    "n_eval_weeks": 29,
+    "global_exist": {
+      "auroc": 0.9801017973602036,
+      "auprc": 0.9627368012563909,
+      "brier": 0.03781162197840689,
+      "ece": 0.007254204376618608,
+      "mean_pred": 0.4432179561991803,
+      "empirical_rate": 0.4416319966437087
+    },
+    "active_edge_retention": {
+      "auroc": 0.6121708348394513,
+      "auprc": 0.668531463801718,
+      "brier": 0.2459581584963233,
+      "ece": 0.09432459313335739,
+      "mean_pred": 0.6471092348461492,
+      "empirical_rate": 0.5759478149982834
+    },
+    "node_stress_10pct": {
+      "auroc": 0.6073020048206652,
+      "auprc": 0.5864262221684792,
+      "brier": 0.2559829607435089,
+      "ece": 0.09937590970561423,
+      "mean_pred": 0.40897198385719596,
+      "empirical_rate": 0.4872126436781609
+    },
+    "edge_log_stock_mae": 0.9064768552780151,
+    "edge_log_stock_rmse": 1.8319389820098877,
+    "node_log_tvl_mae": 0.5275068283081055,
+    "node_log_tvl_rmse": 1.196886658668518,
+    "node_tvl_spearman": 0.14625016313685502,
+    "monotonicity_violation_rate": 0.0,
+    "walk_forward_top5_stress_or_5pct_hit_rate": 0.6344827586206896,
+    "walk_forward_top7_stress_or_5pct_hit_rate": 0.6009852216748767,
+    "walk_forward_top7_directional_contraction_rate": 0.6650246305418719
+  },
+  "h8": {
+    "n_eval_weeks": 25,
+    "global_exist": {
+      "auroc": 0.9676429347999143,
+      "auprc": 0.9347097771853642,
+      "brier": 0.0556585212020836,
+      "ece": 0.012477965541973082,
+      "mean_pred": 0.41838799301702095,
+      "empirical_rate": 0.41521958132704984
+    },
+    "active_edge_retention": {
+      "auroc": 0.6161543388368909,
+      "auprc": 0.5035750508764016,
+      "brier": 0.25327196852903205,
+      "ece": 0.13503054533805364,
+      "mean_pred": 0.5226013514189692,
+      "empirical_rate": 0.3997409507806483
+    },
+    "node_stress_10pct": {
+      "auroc": 0.6147113207343001,
+      "auprc": 0.7290507885571891,
+      "brier": 0.2509324684908376,
+      "ece": 0.13855622302293777,
+      "mean_pred": 0.5116284000356992,
+      "empirical_rate": 0.6403
+    },
+    "edge_log_stock_mae": 1.3269762992858887,
+    "edge_log_stock_rmse": 2.25182843208313,
+    "node_log_tvl_mae": 0.8201881647109985,
+    "node_log_tvl_rmse": 1.5750178098678589,
+    "node_tvl_spearman": 0.14682590185646519,
+    "monotonicity_violation_rate": 0.0,
+    "walk_forward_top5_stress_or_5pct_hit_rate": 0.7680000000000001,
+    "walk_forward_top7_stress_or_5pct_hit_rate": 0.7542857142857143,
+    "walk_forward_top7_directional_contraction_rate": 0.6742857142857143
+  },
+  "h12": {
+    "n_eval_weeks": 21,
+    "global_exist": {
+      "auroc": 0.9575594166640944,
+      "auprc": 0.9092038130125291,
+      "brier": 0.06916520467649313,
+      "ece": 0.017818244387494495,
+      "mean_pred": 0.397185373629974,
+      "empirical_rate": 0.39404132384562074
+    },
+    "active_edge_retention": {
+      "auroc": 0.608322336452656,
+      "auprc": 0.3859914124413684,
+      "brier": 0.2271436059109863,
+      "ece": 0.12673326817120617,
+      "mean_pred": 0.4143001095140307,
+      "empirical_rate": 0.30228845683859124
+    },
+    "node_stress_10pct": {
+      "auroc": 0.5977270884772219,
+      "auprc": 0.7841352451983501,
+      "brier": 0.22420362339230343,
+      "ece": 0.11948951248138671,
+      "mean_pred": 0.6190798181863059,
+      "empirical_rate": 0.7174206349206349
+    },
+    "edge_log_stock_mae": 1.6250665187835693,
+    "edge_log_stock_rmse": 2.5273520946502686,
+    "node_log_tvl_mae": 1.040987253189087,
+    "node_log_tvl_rmse": 1.8288068771362305,
+    "node_tvl_spearman": 0.1512190159899538,
+    "monotonicity_violation_rate": 0.0,
+    "walk_forward_top5_stress_or_5pct_hit_rate": 0.8,
+    "walk_forward_top7_stress_or_5pct_hit_rate": 0.7891156462585033,
+    "walk_forward_top7_directional_contraction_rate": 0.6326530612244896
+  }
+}

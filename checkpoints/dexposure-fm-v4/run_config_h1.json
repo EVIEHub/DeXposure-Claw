@@ -1,0 +1,62 @@
+{
+  "artifact_status": "complete",
+  "experiment_kind": "dexposure_fm_v4_netflow_monotonic",
+  "model_family": "dexposure_fm_v4",
+  "settlement_basis": "constant_price_net_flow_ex_eth_btc_beta",
+  "forecast_horizon_weeks": 1,
+  "holdout_start": "2025-01-01",
+  "validation_weeks": 24,
+  "epochs": 40,
+  "early_stop_patience": 8,
+  "seed": 42,
+  "network_snapshots": 283,
+  "source_sha256": "af52e52a68be6d92a16a8355f9ce90a5792469fe27ca2ae0d545c4ede8876ede",
+  "spot_oracle_sha256": "b8d7c6a53cf5371d4b36054d8a732c58c30ab5fefdc7aa8be2b93fa8c9122964",
+  "selected_epoch": 23,
+  "completed_epochs": 31,
+  "parameters": {
+    "name": "v4_netflow_fractional_monotonic",
+    "head_lr": 0.0005,
+    "encoder_lr": 3e-05,
+    "weight_decay": 0.0001,
+    "hidden_dim": 256,
+    "dropout": 0.1,
+    "retain_loss_weight": 2.5,
+    "exist_loss_weight": 0.8,
+    "edge_delta_loss_weight": 1.0,
+    "stress_loss_weight": 2.5,
+    "node_delta_loss_weight": 3.0,
+    "downside_asymmetry": 1.5
+  },
+  "calibration": {
+    "calibration_split": "pre2025_validation_only",
+    "retain_nll_before": 0.4834115505218506,
+    "retain_nll_after": 0.48184823989868164,
+    "retain_hazard_scales": [
+      1.134208083152771,
+      0.9148412346839905,
+      0.7869365215301514,
+      0.7612761855125427
+    ],
+    "stress_nll_before": 0.5610018968582153,
+    "stress_nll_after": 0.5514945983886719,
+    "stress_hazard_scales": [
+      1.2579058408737183,
+      0.7215490341186523,
+      0.7190755009651184,
+      0.7784386277198792
+    ],
+    "exist_logit_temps": [
+      1.1542280912399292,
+      1.2146552801132202,
+      1.2862297296524048,
+      1.3147194385528564
+    ],
+    "exist_logit_biases": [
+      0.0758109763264656,
+      0.22478817403316498,
+      0.23065723478794098,
+      0.21666577458381653
+    ]
+  }
+}

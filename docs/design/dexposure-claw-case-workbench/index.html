@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeXposure-Claw | DeFi 跨协议风险速览与专业工作台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+  <script src="/assets/contagion.js?v=20261116b"></script>
+  <style>
+    :root, [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f7f6f2;
+      --rail: #efede6;
+      --panel: #ffffff;
+      --elev: #f4f3ed;
+      --hover: #ebe9e0;
+      --thead: #f3f2ec;
+      --bd: #dfddd4;
+      --bd2: #c8c5b8;
+      --tx: #1f2421;
+      --tx2: #535955;
+      --mu: #7a807c;
+      --red: #cc4b31;
+      --red-bg: #fbeae5;
+      --red-bd: #e8b8ad;
+      --amber: #ad6e18;
+      --amber-bg: #fbf2df;
+      --amber-bd: #e5ca98;
+      --green: #26684b;
+      --green-bg: #e6f3ec;
+      --green-bd: #b2d6c3;
+      --blue: #275882;
+      --blue-bg: #e7f0f8;
+      --blue-bd: #b6cee4;
+      --purple: #6e3ea0;
+      --purple-bg: #f1eaf9;
+      --purple-bd: #cfb9e8;
+      --dag-bg: #faf9f5;
+      --dag-box: #ffffff;
+      --dag-focus: #edf3f9;
+      --t3-bg: radial-gradient(circle at 50% 45%, #ffffff 0%, #efede5 78%);
+      --t3-bar: rgba(255,255,255,0.90);
+      --t3-lbl-bg: rgba(255,255,255,0.94);
+      --shadow: 0 2px 8px rgba(31,36,33,0.04);
+      --sans: "DM Sans", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0c0f15;
+      --rail: #11161f;
+      --panel: #141a24;
+      --elev: #1b2331;
+      --hover: #232d3f;
+      --thead: #18202d;
+      --bd: rgba(148,163,184,0.16);
+      --bd2: rgba(148,163,184,0.30);
+      --tx: #f1f5f9;
+      --tx2: #a3b3c9;
+      --mu: #6f8098;
+      --red: #fb7185;
+      --red-bg: rgba(244,63,94,0.14);
+      --red-bd: rgba(244,63,94,0.38);
+      --amber: #fbbf24;
+      --amber-bg: rgba(245,158,11,0.14);
+      --amber-bd: rgba(245,158,11,0.38);
+      --green: #34d399;
+      --green-bg: rgba(16,185,129,0.14);
+      --green-bd: rgba(16,185,129,0.38);
+      --blue: #38bdf8;
+      --blue-bg: rgba(56,189,248,0.14);
+      --blue-bd: rgba(56,189,248,0.38);
+      --purple: #c084fc;
+      --purple-bg: rgba(192,132,252,0.14);
+      --purple-bd: rgba(192,132,252,0.38);
+      --dag-bg: #0e131c;
+      --dag-box: #161e2b;
+      --dag-focus: #172554;
+      --t3-bg: radial-gradient(circle at 50% 46%, #131d31 0%, #090c12 76%);
+      --t3-bar: rgba(20,26,36,0.90);
+      --t3-lbl-bg: rgba(15,20,29,0.92);
+      --shadow: 0 4px 16px rgba(0,0,0,0.28);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); color: var(--tx); font-family: var(--sans); font-size: 13.5px; line-height: 1.5; min-height: 100vh; }
+    .app { max-width: 1740px; margin: 0 auto; padding: 0 22px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Top Header */
+    .top { position: sticky; top: 0; z-index: 30; background: var(--bg); padding: 12px 0 10px; border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .brand-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--tx); }
+    .brand-mark { width: 25px; height: 25px; border-radius: 6px; background: var(--tx); color: var(--panel); display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 12px; font-weight: 700; }
+    .tag { font-family: var(--mono); font-size: 11px; padding: 3px 9px; border-radius: 999px; background: var(--elev); color: var(--tx2); border: 1px solid var(--bd); font-weight: 500; }
+
+    .ed-switch { display: inline-flex; gap: 3px; background: var(--rail); padding: 3px; border-radius: 9px; border: 1px solid var(--bd); }
+    .ed-btn { border: 1px solid transparent; background: transparent; color: var(--tx2); padding: 5px 13px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .14s ease; }
+    .ed-btn:hover { color: var(--tx); background: var(--hover); }
+    .ed-btn.active { background: var(--panel); color: var(--tx); border-color: var(--bd2); box-shadow: var(--shadow); font-weight: 700; }
+
+    .top-right { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .ctl { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .lbl { font-size: 12px; color: var(--tx2); font-weight: 600; }
+    .seg { display: inline-flex; gap: 3px; background: var(--rail); padding: 3px; border-radius: 8px; border: 1px solid var(--bd); flex-wrap: wrap; }
+    .tab, .subtab, .hbtn, .utab { background: transparent; border: 1px solid transparent; color: var(--tx2); padding: 5px 11px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .14s ease; }
+    .tab:hover, .subtab:hover, .hbtn:hover, .utab:hover { color: var(--tx); background: var(--hover); }
+    .tab.active, .subtab.active, .hbtn.active, .utab.active { background: var(--panel); color: var(--tx); border-color: var(--bd2); box-shadow: 0 1px 2px rgba(0,0,0,0.06); font-weight: 700; }
+    .hbtn { font-family: var(--mono); }
+    .theme-btn { background: var(--panel); border: 1px solid var(--bd2); color: var(--tx); padding: 5px 11px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+    .theme-btn:hover { background: var(--hover); }
+
+    select, input[type="text"] { background: var(--panel); color: var(--tx); border: 1px solid var(--bd2); border-radius: 7px; padding: 6px 10px; font-size: 12.5px; font-family: var(--sans); outline: none; }
+    select:focus, input[type="text"]:focus { border-color: var(--blue); }
+
+    .edition { display: none; flex-direction: column; gap: 14px; }
+    .edition.active { display: flex; }
+    .uview, .view { display: none; flex-direction: column; gap: 14px; }
+    .uview.active, .view.active { display: flex; }
+
+    /* KPI Strips */
+    .kpis4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .kpis5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .kpi { background: var(--panel); border: 1px solid var(--bd); border-radius: 11px; padding: 12px 15px; box-shadow: var(--shadow); }
+    .kpi.click { cursor: pointer; transition: border-color .14s ease, background .14s ease; }
+    .kpi.click:hover { border-color: var(--bd2); background: var(--elev); }
+    .kt { font-size: 12px; color: var(--tx2); font-weight: 600; }
+    .kv { font-family: var(--mono); font-size: 21px; font-weight: 700; margin-top: 3px; letter-spacing: -0.02em; color: var(--tx); }
+    .ks { font-size: 11.5px; color: var(--mu); margin-top: 2px; }
+
+    /* Panels & Grids */
+    .grid2 { display: grid; grid-template-columns: 1.22fr 1fr; gap: 14px; align-items: start; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--bd); border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+    .ph { padding: 11px 16px; border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--panel); }
+    .pt { font-size: 14.5px; font-weight: 700; color: var(--tx); }
+    .ps { font-size: 12px; color: var(--tx2); }
+    .pb { padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; }
+    .pb.flush { padding: 0; }
+    .note { padding: 7px 16px; font-size: 11.5px; color: var(--mu); background: var(--elev); border-bottom: 1px solid var(--bd); }
+
+    /* Protocol Scorecard (Compact Visual Strip — No Prose Paragraphs) */
+    .chip-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .qchip { background: var(--elev); border: 1px solid var(--bd); color: var(--tx2); border-radius: 999px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    .qchip:hover { background: var(--hover); color: var(--tx); }
+    .qchip.active { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bd); }
+
+    .scorecard { background: var(--elev); border: 1px solid var(--bd); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .sc-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .sc-id { display: flex; align-items: center; gap: 10px; }
+    .sc-name { font-size: 16.5px; font-weight: 700; color: var(--tx); }
+    .sc-meta { font-size: 12px; color: var(--tx2); }
+    .sc-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .sc-cell { background: var(--panel); border: 1px solid var(--bd); border-radius: 8px; padding: 8px 11px; }
+    .sc-lbl { font-size: 11px; color: var(--mu); font-weight: 600; display: flex; justify-content: space-between; }
+    .sc-val { font-family: var(--mono); font-size: 15px; font-weight: 700; margin-top: 2px; }
+    .sc-bar { height: 5px; border-radius: 999px; background: var(--elev); overflow: hidden; margin-top: 5px; }
+    .sc-bar > i { display: block; height: 100%; border-radius: 999px; }
+
+    /* Avatars, Badges, Bars */
+    .ava { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid var(--bd2); background: var(--elev); vertical-align: middle; flex-shrink: 0; }
+    .ava-lg { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--bd2); background: var(--panel); flex-shrink: 0; }
+    .ava-fb { display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9.5px; font-weight: 700; color: var(--tx2); }
+    .pcell { display: flex; align-items: center; gap: 8px; }
+
+    .b { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid; }
+    .b-red { color: var(--red); background: var(--red-bg); border-color: var(--red-bd); }
+    .b-amber { color: var(--amber); background: var(--amber-bg); border-color: var(--amber-bd); }
+    .b-green { color: var(--green); background: var(--green-bg); border-color: var(--green-bd); }
+    .b-blue { color: var(--blue); background: var(--blue-bg); border-color: var(--blue-bd); }
+    .b-purple { color: var(--purple); background: var(--purple-bg); border-color: var(--purple-bd); }
+    .b-mu { color: var(--tx2); background: var(--elev); border-color: var(--bd); }
+
+    .btn { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-bd); border-radius: 7px; padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--sans); }
+    .btn:hover { filter: brightness(0.96); }
+    .btn-red { background: var(--red-bg); color: var(--red); border-color: var(--red-bd); }
+    .btn-ghost { background: var(--panel); color: var(--tx); border: 1px solid var(--bd2); }
+
+    .bar-track { width: 64px; height: 5px; border-radius: 999px; background: var(--elev); border: 1px solid var(--bd); overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+    .bar-fill { height: 100%; border-radius: 999px; background: var(--red); }
+
+    /* Tables & Visual Stages */
+    .tbl-scroll { max-height: 590px; overflow-y: auto; }
+    .tbl-scroll-sm { max-height: 205px; overflow-y: auto; border: 1px solid var(--bd); border-radius: 9px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th { text-align: left; padding: 8px 11px; font-size: 11px; font-weight: 700; color: var(--tx2); border-bottom: 1px solid var(--bd); background: var(--thead); position: sticky; top: 0; z-index: 2; }
+    td { padding: 8px 11px; border-bottom: 1px solid var(--bd); vertical-align: middle; }
+    tbody tr { cursor: pointer; transition: background .1s ease; }
+    tbody tr:hover { background: var(--hover); }
+    tr.sel { background: var(--blue-bg); }
+    .mono { font-family: var(--mono); }
+    .red { color: var(--red); } .amber { color: var(--amber); } .green { color: var(--green); } .blue { color: var(--blue); } .mu { color: var(--mu); }
+
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+    .st { background: var(--elev); border: 1px solid var(--bd); border-radius: 8px; padding: 8px 10px; }
+    .stl { font-size: 11px; color: var(--tx2); }
+    .stv { font-family: var(--mono); font-size: 14px; font-weight: 700; margin-top: 2px; }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 9px; flex-wrap: wrap; padding: 8px 11px; background: var(--elev); border: 1px solid var(--bd); border-radius: 9px; }
+    .dag { background: var(--dag-bg); border: 1px solid var(--bd); border-radius: 10px; height: 314px; overflow: hidden; position: relative; }
+    .quad-box { background: var(--dag-bg); border: 1px solid var(--bd); border-radius: 10px; height: 430px; overflow: hidden; position: relative; }
+
+    .whatif-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+    .whatif-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--bd2); background: var(--panel); color: var(--tx); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+    .whatif-btn:hover { background: var(--hover); }
+    .whatif-btn.active { background: var(--red-bg); color: var(--red); border-color: var(--red-bd); font-weight: 700; }
+
+    .guide-list { display: flex; flex-direction: column; gap: 8px; }
+    .guide-row { background: var(--elev); border: 1px solid var(--bd); border-radius: 9px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
+    .guide-row:hover { background: var(--hover); border-color: var(--bd2); }
+
+    /* Shared 3D Stratified Stage */
+    #threeWrap { display: none; position: relative; width: 100%; height: 470px; border-radius: 10px; border: 1px solid var(--bd); background: var(--t3-bg); overflow: hidden; }
+    .t3-top { position: absolute; top: 8px; left: 10px; right: 10px; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+    .t3-top > * { pointer-events: auto; }
+    .t3-bar { display: flex; align-items: center; gap: 4px; background: var(--t3-bar); border: 1px solid var(--bd2); border-radius: 7px; padding: 3px 7px; backdrop-filter: blur(6px); flex-wrap: wrap; }
+    .t3-btn { background: transparent; border: 1px solid transparent; color: var(--tx2); font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; cursor: pointer; font-family: var(--sans); }
+    .t3-btn:hover { color: var(--tx); background: var(--hover); }
+    .t3-btn.active { color: var(--blue); background: var(--blue-bg); border-color: var(--blue-bd); }
+    #threeDecks { position: absolute; left: 10px; top: 48px; bottom: 44px; z-index: 4; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+    .deck-tag { background: var(--t3-bar); border: 1px solid var(--bd); border-left: 3px solid; border-radius: 5px; padding: 3px 7px; font-size: 10.5px; font-weight: 700; color: var(--tx); backdrop-filter: blur(4px); }
+    .deck-tag span { display: block; font-weight: 500; font-size: 9.5px; color: var(--mu); font-family: var(--mono); }
+    #threeLabels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
+    .t3-lbl { position: absolute; transform: translate(-50%, 0); margin-top: 3px; padding: 1.5px 6px; border-radius: 4px; font-size: 10.5px; font-weight: 600; white-space: nowrap; background: var(--t3-lbl-bg); border: 1px solid var(--bd2); color: var(--tx); pointer-events: auto; cursor: pointer; user-select: none; box-shadow: 0 2px 6px rgba(0,0,0,0.10); }
+    .t3-lbl:hover { border-color: var(--blue); z-index: 8; }
+    .t3-lbl.tok { border-color: var(--purple-bd); color: var(--purple); }
+    .t3-lbl.m7 { border-color: var(--amber-bd); color: var(--amber); }
+    .t3-lbl.drop { border-color: var(--red-bd); color: var(--red); }
+    .t3-lbl.foc { background: var(--tx); border-color: var(--blue); color: var(--panel); font-size: 11px; z-index: 7; }
+    .t3-lbl.foc .sub { color: var(--panel); opacity: 0.82; }
+    .t3-lbl .sub { font-family: var(--mono); font-size: 9.5px; color: var(--tx2); margin-left: 4px; font-weight: 500; }
+    #threeTip, #quadTip { display: none; position: absolute; z-index: 9; min-width: 230px; max-width: 290px; background: var(--panel); border: 1px solid var(--bd2); border-radius: 9px; padding: 9px 11px; pointer-events: none; box-shadow: 0 8px 22px rgba(0,0,0,0.16); font-size: 11.5px; color: var(--tx); }
+    .t3-leg { position: absolute; bottom: 8px; left: 10px; right: 10px; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; background: var(--t3-bar); border: 1px solid var(--bd); border-radius: 7px; padding: 5px 10px; font-size: 11px; color: var(--tx2); pointer-events: none; backdrop-filter: blur(6px); }
+    .t3-ring { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 3px; vertical-align: middle; background: var(--panel); border: 2px solid; }
+
+    /* Institutional Backtest View (Lift Bars, Timeline Strip & Grouped Ledger) */
+    .kpi.active-card { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue-bd), var(--shadow); }
+    .kpi-hero { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+    .kpi-hero .kv { margin-top: 0; }
+    .kpi-cmp { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .kpi-bar-row { display: grid; grid-template-columns: 56px 1fr 42px; align-items: center; gap: 6px; font-size: 10.5px; color: var(--tx2); font-family: var(--mono); }
+    .kpi-bar-row.muted { color: var(--mu); }
+    .kpi-bar-bg { height: 5px; border-radius: 999px; background: var(--elev); border: 1px solid var(--bd); overflow: hidden; }
+    .kpi-bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--green); }
+    .kpi-bar-fill.base { background: var(--bd2); }
+    .kpi-bar-fill.blue { background: var(--blue); }
+    .wf-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(156px, 1fr)); gap: 8px; padding: 10px 16px; background: var(--elev); border-bottom: 1px solid var(--bd); }
+    .wf-pill { text-align: left; background: var(--panel); border: 1px solid var(--bd); border-radius: 8px; padding: 7px 10px; cursor: pointer; font-family: var(--sans); color: var(--tx); transition: border-color .14s ease, background .14s ease; display: flex; flex-direction: column; gap: 3px; }
+    .wf-pill:hover { border-color: var(--bd2); background: var(--hover); }
+    .wf-pill.active { border-color: var(--blue); background: var(--blue-bg); box-shadow: inset 0 0 0 1px var(--blue-bd); }
+    .wf-pill-top { display: flex; align-items: center; justify-content: space-between; gap: 5px; font-size: 11.5px; font-weight: 700; }
+    .wf-pill-sub { display: flex; align-items: center; justify-content: space-between; gap: 5px; font-size: 11px; color: var(--tx2); font-family: var(--mono); }
+    .wf-rubric { padding: 8px 16px; font-size: 12px; color: var(--tx2); background: var(--panel); border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .u-track-wrap { container-type: inline-size; }
+    tr.wf-grp { background: var(--elev); cursor: default; }
+    tr.wf-grp:hover { background: var(--elev); }
+    tr.wf-grp td { padding: 8px 12px; font-size: 12px; border-top: 1px solid var(--bd2); border-bottom: 1px solid var(--bd); }
+    .wf-grp-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .loss-cell { display: inline-flex; align-items: center; gap: 7px; }
+    .loss-track { width: 58px; height: 6px; border-radius: 999px; background: var(--elev); border: 1px solid var(--bd); overflow: hidden; flex-shrink: 0; }
+    .loss-fill { display: block; height: 100%; border-radius: 999px; background: var(--tx2); opacity: 0.72; }
+    .loss-fill.hit { background: var(--green); opacity: 1; }
+    @media (forced-colors: active) {
+      .kpi-bar-fill, .loss-fill { background: Highlight; forced-color-adjust: none; }
+      .kpi-bar-fill.base { background: GrayText; }
+      .kpi.active-card, .wf-pill.active { outline: 2px solid Highlight; }
+    }
+    @container (width < 680px) {
+      .u-track-wrap thead { display: none; }
+      .u-track-wrap table, .u-track-wrap tbody, .u-track-wrap tr, .u-track-wrap td { display: block; }
+      .u-track-wrap tr:not(.wf-grp) { padding: 8px 12px; border-bottom: 1px solid var(--bd); }
+      .u-track-wrap tr:not(.wf-grp) td { border-bottom: none; padding: 3px 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+      .u-track-wrap tr:not(.wf-grp) td::before { content: attr(data-lbl); font-size: 11px; color: var(--mu); font-weight: 600; font-family: var(--sans); }
+    }
+
+    @media (max-width: 1180px) {
+      .grid2, .grid3, .kpis4, .kpis5, .sc-metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app" data-case="live">
+  <!-- Top Bar -->
+  <header class="top">
+    <div class="brand-wrap">
+      <div class="brand"><span class="brand-mark">DX</span> DeXposure-Claw</div>
+      <div class="ed-switch" role="tablist" aria-label="视图模式">
+        <button type="button" class="ed-btn active" id="edBtnUser" onclick="setEdition('user')">风险速览</button>
+        <button type="button" class="ed-btn" id="edBtnPro" onclick="setEdition('pro')">专业工作台</button>
+      </div>
+      <span class="tag" id="dataTag">—</span>
+    </div>
+
+    <div class="top-right">
+      <div class="ctl">
+        <span class="lbl" id="hzLabel">窗口</span>
+        <div class="seg" id="hPills">
+          <button type="button" class="hbtn" id="hBtn1" data-h="1" onclick="setHorizon('1')">7D</button>
+          <button type="button" class="hbtn active" id="hBtn4" data-h="4" onclick="setHorizon('4')">30D</button>
+          <button type="button" class="hbtn" id="hBtn8" data-h="8" onclick="setHorizon('8')">60D</button>
+        </div>
+      </div>
+      <button type="button" class="theme-btn" id="syncBtn" onclick="triggerLiveSync()" title="唤醒 Cloudflare 容器拉取最新 DeFiLlama 数据并运行 DeXposure-FM">↻ 实时同步</button>
+      <button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()">☾ 深色</button>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MODE 1: 风险速览 (Overview / Lite — Self-Explanatory Visual Layout)    -->
+  <!-- ===================================================================== -->
+  <div class="edition active" id="edUser">
+    <nav class="seg" style="align-self:flex-start" aria-label="风险速览导航">
+      <button type="button" class="utab active" data-uview="uHome" onclick="showUserView('uHome')">全景监测</button>
+      <button type="button" class="utab" data-uview="uStress" onclick="showUserView('uStress')">压力沙盘</button>
+      <button type="button" class="utab" data-uview="uGuide" onclick="showUserView('uGuide')">风险分层</button>
+      <button type="button" class="utab" data-uview="uTrack" onclick="showUserView('uTrack')">历史回测</button>
+    </nav>
+
+    <!-- Lite View 1: 全景监测 -->
+    <section class="uview active" id="uHome">
+      <div class="kpis4" id="uCards"></div>
+
+      <div class="grid2">
+        <!-- Left: Protocol Scorecard + Quadrant / 2-Hop Flow / 3D Stratified Stage -->
+        <div class="panel">
+          <div class="ph">
+            <div class="ctl" style="flex:1">
+              <input type="text" id="uQuickSearch" placeholder="搜索协议 (Aave / Maple / Morpho…)" oninput="filterUserFocusSelect()" style="width:190px" />
+              <select id="uFocusSel" onchange="setFocus(this.value)" style="min-width:210px"></select>
+            </div>
+            <div class="seg">
+              <button type="button" class="subtab active" id="uModeQuad" onclick="setUserLeftMode('quad')">分层象限</button>
+              <button type="button" class="subtab" id="uModeFlow" onclick="setUserLeftMode('flow')">资金穿透</button>
+              <button type="button" class="subtab" id="uMode3d" onclick="setUserLeftMode('3d')">3D 分层拓扑</button>
+            </div>
+          </div>
+          <div class="pb">
+            <div class="chip-row" id="uQuickChips"></div>
+            <div class="scorecard" id="uHealthCard"></div>
+
+            <!-- Visual 1: Tiered Risk Quadrant + Reserve Rail + Directional Exposure -->
+            <div id="uQuadWrap" style="display:flex;flex-direction:column;gap:8px">
+              <div class="quad-box" id="quadBox">
+                <svg id="quadSvg" width="100%" height="100%" viewBox="0 0 820 430" preserveAspectRatio="xMidYMid meet"></svg>
+                <div id="quadTip"></div>
+              </div>
+            </div>
+
+            <!-- Visual 2: 2-Hop Directional Exposure Flow -->
+            <div id="uFlowWrap" style="display:none;flex-direction:column;gap:9px">
+              <div class="dag"><svg id="uFlowSvg" width="100%" height="100%" viewBox="0 0 820 314" preserveAspectRatio="xMidYMid meet"></svg></div>
+              <div class="ps" id="uEdgeCount">—</div>
+              <div class="tbl-scroll-sm">
+                <table>
+                  <thead><tr><th>对手方</th><th>资金方向</th><th>敞口规模</th><th>预计净留存率 r̂</th><th>头寸动向</th></tr></thead>
+                  <tbody id="uEdgeBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Visual 3: 3D 4-Tier × 4-Sector Stage -->
+            <div id="userThreeHost"></div>
+          </div>
+        </div>
+
+        <!-- Right: Risk Screening Table -->
+        <div class="panel">
+          <div class="ph">
+            <div class="seg">
+              <button type="button" class="subtab active" data-ulens="alpha" onclick="setUserLens('alpha')">高危排雷副榜</button>
+              <button type="button" class="subtab" data-ulens="m7" onclick="setUserLens('m7')">巨鲸主榜 (Top 7)</button>
+              <button type="button" class="subtab" data-ulens="mid" onclick="setUserLens('mid')">外流筛选</button>
+              <button type="button" class="subtab" data-ulens="hhi" onclick="setUserLens('hhi')">单点集中</button>
+            </div>
+            <input type="text" id="uListSearch" placeholder="筛选…" oninput="renderUserList()" style="width:120px" />
+          </div>
+          <div class="note" id="uLensNote">—</div>
+          <div class="pb flush tbl-scroll">
+            <table>
+              <thead><tr><th>#</th><th>协议</th><th>关联敞口</th><th>预计锁价净撤出</th><th>最大单一依赖</th><th>状态</th></tr></thead>
+              <tbody id="uListBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lite View 2: 压力沙盘 -->
+    <section class="uview" id="uStress">
+      <div class="bar" style="background:var(--panel);padding:11px 14px">
+        <div class="whatif-strip" id="uPresetStrip">
+          <button type="button" class="whatif-btn active" data-upreset="depeg_usdc_usdt" onclick="runUserPreset('depeg_usdc_usdt')">USDC + USDT -20%</button>
+          <button type="button" class="whatif-btn" data-upreset="depeg_usdc" onclick="runUserPreset('depeg_usdc')">USDC -20%</button>
+          <button type="button" class="whatif-btn" data-upreset="depeg_usde" onclick="runUserPreset('depeg_usde')">USDe -20%</button>
+          <button type="button" class="whatif-btn" data-upreset="proto_lido" onclick="runUserPreset('proto_lido')">Lido -50%</button>
+          <button type="button" class="whatif-btn" data-upreset="proto_aave" onclick="runUserPreset('proto_aave')">AAVE V3 -50%</button>
+          <button type="button" class="whatif-btn" data-upreset="proto_top3" onclick="runUserPreset('proto_top3')">巨鲸主榜 Top-3 -50%</button>
+          <button type="button" class="whatif-btn" data-upreset="proto_alpha3" onclick="runUserPreset('proto_alpha3')">Alpha 副榜 Top-3 -50%</button>
+        </div>
+        <div class="ctl">
+          <div class="seg" id="uSimModePills">
+            <button type="button" class="subtab active" data-usm="depeg" onclick="setUserSimMode('depeg')">稳定币脱锚</button>
+            <button type="button" class="subtab" data-usm="protocol" onclick="setUserSimMode('protocol')">协议违约</button>
+          </div>
+          <select id="uSimSel" onchange="clearUserPresetActive(); runUserSim()" style="min-width:240px"></select>
+          <span class="lbl" id="uSimShockTitle">幅度</span>
+          <input type="range" id="uSimShock" min="5" max="100" step="5" value="20" oninput="$('uSimShockLbl').textContent=this.value+'%'; clearUserPresetActive(); runUserSim()" />
+          <span class="b b-red mono" id="uSimShockLbl">20%</span>
+        </div>
+      </div>
+
+      <div class="kpis4" id="uSimKpis"></div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="ph"><div class="pt" id="uCascTitle">多轮风险传导路径</div><span class="ps" id="uSimSummary">—</span></div>
+          <div class="pb"><div class="dag" style="height:345px"><svg id="uSimCascSvg" width="100%" height="100%" viewBox="0 0 780 330" preserveAspectRatio="xMidYMid meet"></svg></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div class="pt">受波及协议</div><input type="text" id="uSimFilter" placeholder="搜索协议…" oninput="renderUserSimTable()" style="width:160px" /></div>
+          <div class="pb flush tbl-scroll" style="max-height:375px">
+            <table>
+              <thead><tr><th>轮次</th><th>协议</th><th>传导来源</th><th>预计损失</th><th>占 TVL</th><th>等级</th></tr></thead>
+              <tbody id="uSimBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lite View 3: 风险分层 -->
+    <section class="uview" id="uGuide">
+      <div class="grid3">
+        <div class="panel">
+          <div class="ph"><div><div class="pt red" id="uGuideTitle1">高净撤出预警</div><div class="ps">中腰部协议 · <span id="uGuideHzLbl">30D</span> 锁价净撤出排序（已剔除币价 Beta）</div></div></div>
+          <div class="pb"><div class="guide-list" id="uGuideCol1"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div><div class="pt amber">单点高集中 (≥75%)</div><div class="ps">中腰部协议 · 单一对手方敞口占比 ≥ 75%</div></div></div>
+          <div class="pb"><div class="guide-list" id="uGuideCol2"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div><div class="pt blue">核心底座枢纽 (TVL ≥ $1B)</div><div class="ps">全网底层流动性基础设施</div></div></div>
+          <div class="pb"><div class="guide-list" id="uGuideCol3"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lite View 4: 历史回测 -->
+    <section class="uview" id="uTrack">
+      <div class="kpis4" id="uTrackKpis"></div>
+      <div class="panel">
+        <div class="ph">
+          <div>
+            <div class="pt" id="uTrackTitle">2026 滚动交割核验（已剔除 ETH/BTC 价格波动 · 期初锁价净赎回口径）</div>
+            <div class="ps" id="uTrackSub">对比模型前瞻预警队列与到期真实链上资金净外流；点击下方时间轴卡片可按期筛选</div>
+          </div>
+          <div class="ctl">
+            <div class="seg" role="tablist" aria-label="回测榜单视角">
+              <button type="button" class="subtab active" data-wfboard="whale" onclick="setWfBoard('whale')">系统性大盘榜 (敞口加权)</button>
+              <button type="button" class="subtab" data-wfboard="alpha" onclick="setWfBoard('alpha')">高危异动排雷榜 (去规模偏置)</button>
+            </div>
+            <div class="seg">
+              <button type="button" class="subtab active" data-utrk="all" onclick="setTrackAmp('all')">全部预警工单</button>
+              <button type="button" class="subtab" data-utrk="high" onclick="setTrackAmp('high')">仅重度预期 (≥10%)</button>
+            </div>
+            <select id="uWfSel" aria-label="交割窗口筛选" onchange="renderUserTrack()"></select>
+          </div>
+        </div>
+        <div class="wf-strip" id="uWfStrip"></div>
+        <div class="wf-rubric" id="uWfRubric"></div>
+        <div class="pb flush tbl-scroll u-track-wrap" tabindex="0" role="region" aria-labelledby="uTrackTitle">
+          <table>
+            <thead><tr><th>#</th><th>协议与赛道</th><th>发布时受险敞口</th><th>预警等级 · 预期压力</th><th>到期真实净流向</th><th>捕获真实净流失额</th><th>交割核验</th></tr></thead>
+            <tbody id="uTrackBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid2" id="uCrisisCards"></div>
+    </section>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODE 2: 专业工作台 (Pro Workbench — Full Institutional Audit)          -->
+  <!-- ===================================================================== -->
+  <div class="edition" id="edPro">
+    <nav class="seg" style="align-self:flex-start" aria-label="专业工作台导航">
+      <button type="button" class="tab active" data-view="vOverview" onclick="showView('vOverview')">1. 敞口穿透</button>
+      <button type="button" class="tab" data-view="vBacktest" onclick="showView('vBacktest')">2. 样本外回测</button>
+      <button type="button" class="tab" data-view="vContagion" onclick="showView('vContagion')">3. 传染推演 (DebtRank)</button>
+      <button type="button" class="tab" data-view="vAudit" onclick="showView('vAudit')">4. HHI 与门控审计</button>
+    </nav>
+
+    <section class="kpis5">
+      <div class="kpi"><div class="kt">快照 / 图规模 (锁价净流量口径)</div><div class="kv" id="kSnap">—</div><div class="ks" id="kSnapSub">—</div></div>
+      <div class="kpi"><div class="kt">M7 巨鲸主榜 + Alpha 排雷副榜</div><div class="kv" id="kQueue">—</div><div class="ks" id="kQueueSub">—</div></div>
+      <div class="kpi"><div class="kt">FM 重度净撤出边 (r̂ &lt; 70%)</div><div class="kv" id="kEdges">—</div><div class="ks" id="kEdgesSub">—</div></div>
+      <div class="kpi"><div class="kt">2026 Walk-Forward 已交割 (净流量)</div><div class="kv" id="kWf">—</div><div class="ks" id="kWfSub">—</div></div>
+      <div class="kpi"><div class="kt">2025 历史样本外验证</div><div class="kv" id="k29">—</div><div class="ks" id="k29Sub">—</div></div>
+    </section>
+
+    <!-- PRO VIEW 1 -->
+    <section class="view active" id="vOverview">
+      <div class="grid2">
+        <div class="panel">
+          <div class="ph">
+            <div class="ctl"><span class="lbl">协议</span><select id="focusSel" onchange="setFocus(this.value)" style="min-width:220px"></select><span class="b b-mu" id="focusCat">—</span><span class="b b-mu" id="focusM7">—</span></div>
+            <div class="ctl">
+              <button type="button" class="btn btn-red" onclick="simulateFocus()">传染推演 →</button>
+              <div class="seg">
+                <button type="button" class="subtab active" id="mDag" onclick="setLeftMode('dag')">二跳穿透</button>
+                <button type="button" class="subtab" id="mQuad" onclick="setLeftMode('quad')">分层象限</button>
+                <button type="button" class="subtab" id="m3d" onclick="setLeftMode('3d')">3D 分层拓扑</button>
+              </div>
+            </div>
+          </div>
+          <div class="pb" id="dagWrap">
+            <div class="stats">
+              <div class="st"><div class="stl">关联敞口 W(t) / TVL</div><div class="stv" id="fExp">—</div></div>
+              <div class="st"><div class="stl">FM 锁价净撤出 / 挤兑率 p̂_str</div><div class="stv red" id="fDrop">—</div></div>
+              <div class="st"><div class="stl">HHI / 最大对手方</div><div class="stv amber" id="fHhi">—</div></div>
+              <div class="st"><div class="stl">50% 冲击外溢 (预测图)</div><div class="stv blue" id="fSpill">—</div></div>
+            </div>
+            <div class="dag"><svg id="dagSvg" width="100%" height="100%" viewBox="0 0 820 314" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <div class="ps" id="edgeCount">—</div>
+            <div class="tbl-scroll-sm">
+              <table><thead><tr><th>对手方</th><th>关系</th><th>敞口 w(t)</th><th>预计净留存率 r̂</th><th>预计净赎回额 w·(1−r̂)</th><th>头寸动向</th></tr></thead><tbody id="edgeBody"></tbody></table>
+            </div>
+          </div>
+          <div class="pb" id="proQuadWrap" style="display:none">
+            <div class="quad-box" id="proQuadBox">
+              <svg id="proQuadSvg" width="100%" height="100%" viewBox="0 0 820 430" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+          </div>
+          <div class="pb" id="proThreeHost" style="display:none"></div>
+        </div>
+
+        <div class="panel">
+          <div class="ph">
+            <div class="seg">
+              <button type="button" class="subtab active" data-lens="alpha" onclick="setLens('alpha')">Alpha 排雷副榜</button>
+              <button type="button" class="subtab" data-lens="m7" onclick="setLens('m7')">M7 巨鲸主榜</button>
+              <button type="button" class="subtab" data-lens="mid" onclick="setLens('mid')">中腰部筛选</button>
+              <button type="button" class="subtab" data-lens="m2" onclick="setLens('m2')">M2 静态基线</button>
+            </div>
+            <div class="ctl">
+              <select id="sortSel" onchange="renderRanking()" disabled>
+                <option value="poolDropPct">按占池净撤出</option>
+                <option value="pStress">按净挤兑概率 (p̂_stress)</option>
+                <option value="flowDropPct">按信用流收缩</option>
+                <option value="spilloverPredUsd">按传染外溢</option>
+                <option value="hhi">按 HHI</option>
+              </select>
+              <input type="text" id="q" placeholder="搜索…" oninput="renderRanking()" style="width:110px" />
+            </div>
+          </div>
+          <div class="note" id="lensNote">—</div>
+          <div class="pb flush tbl-scroll">
+            <table><thead><tr><th>#</th><th>协议</th><th>敞口 W(t)</th><th>FM 净撤出 占池 / 流</th><th>HHI · 最大对手方</th><th>外溢 (50%)</th><th>工单动作</th></tr></thead><tbody id="rankBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRO VIEW 2 -->
+    <section class="view" id="vBacktest">
+      <div class="ctl" style="justify-content:space-between">
+        <div class="seg">
+          <button type="button" class="subtab active" data-bt="wf" onclick="setBt('wf')">2026 Walk-Forward 交割</button>
+          <button type="button" class="subtab" data-bt="v4h" onclick="setBt('v4h')">2025 33周样本外 (FM-v4 净流量)</button>
+          <button type="button" class="subtab" data-bt="crisis" onclick="setBt('crisis')">2022 Terra / FTX</button>
+          <button type="button" class="subtab" data-bt="p29" onclick="setBt('p29')">2025 29周 B5 (论文原USD存档)</button>
+        </div>
+        <div class="ctl">
+          <div class="seg" id="wfBoardSeg">
+            <button type="button" class="subtab active" data-wfboard="whale" onclick="setWfBoard('whale')">M7 巨鲸主榜</button>
+            <button type="button" class="subtab" data-wfboard="alpha" onclick="setWfBoard('alpha')">Alpha 排雷副榜</button>
+          </div>
+          <div class="seg" id="wfAmpSeg">
+            <button type="button" class="subtab active" data-utrk="all" onclick="setTrackAmp('all')">全部工单</button>
+            <button type="button" class="subtab" data-utrk="high" onclick="setTrackAmp('high')">重度预警 (≥10%)</button>
+          </div>
+          <select id="wfSel" onchange="renderWf()"></select>
+        </div>
+      </div>
+      <div class="panel" id="btWf">
+        <div class="note" id="wfNote">—</div>
+        <div class="pb flush tbl-scroll"><table><thead><tr><th>窗口</th><th>#</th><th>协议</th><th>发布时敞口</th><th>FM 净撤出%</th><th>到期净占池%</th><th>到期净流%</th><th>真实净流失</th><th id="wfColAct">M6 → M7</th><th id="wfColHit">Top-5% 净赎回</th></tr></thead><tbody id="wfBody"></tbody></table></div>
+      </div>
+      <div class="panel" id="btV4h" style="display:none">
+        <div class="note" id="v4hNote">—</div>
+        <div class="pb flush tbl-scroll"><table><thead><tr><th>预测窗口</th><th>测试周数</th><th>节点挤兑 AUROC (FM-v4 vs 动量)</th><th>活跃边留存 AUROC (FM-v4 vs 动量/度数)</th><th>比例净留存均值 (预测 vs 真实 · 偏差)</th><th>单调违背率</th><th>巨鲸主榜 Top-7 命中</th><th>Alpha 副榜 Top-7 vs 同池基准</th></tr></thead><tbody id="v4hBody"></tbody></table></div>
+      </div>
+      <div class="grid2" id="btCrisis" style="display:none">
+        <div class="panel"><div class="ph"><div class="pt" id="terraTitle">Terra</div></div><div class="pb" id="terraBody"></div></div>
+        <div class="panel"><div class="ph"><div class="pt" id="ftxTitle">FTX</div></div><div class="pb" id="ftxBody"></div></div>
+      </div>
+      <div class="panel" id="btP29" style="display:none">
+        <div class="note" id="p29Note">—</div>
+        <div class="pb flush tbl-scroll"><table><thead><tr><th>周</th><th>真实压力数</th><th>M7 精确率</th><th>M6 精确率</th><th>M2 精确率</th><th>M7 误干预</th><th>M6 误干预</th><th>M7 vs M2</th></tr></thead><tbody id="p29Body"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- PRO VIEW 3 -->
+    <section class="view" id="vContagion">
+      <div class="bar">
+        <div class="ctl">
+          <div class="seg" id="simModePills">
+            <button type="button" class="subtab active" data-sm="protocol" onclick="setSimMode('protocol')">协议违约 (DebtRank)</button>
+            <button type="button" class="subtab" data-sm="depeg" onclick="setSimMode('depeg')">稳定币脱锚</button>
+          </div>
+          <select id="simSel" onchange="runSim()" style="min-width:290px"></select>
+          <span class="lbl" id="simShockTitle">冲击比例</span><input type="range" id="simShock" min="5" max="100" step="5" value="50" oninput="$('simShockLbl').textContent=this.value+'%'; runSim()" />
+          <span class="b b-red mono" id="simShockLbl">50%</span>
+        </div>
+        <span class="ps" id="simModelNote">—</span>
+      </div>
+      <div class="kpis4">
+        <div class="kpi"><div class="kt" id="sDirectKt">直接损失 (冲击源)</div><div class="kv" id="sDirect">—</div><div class="ks" id="sDirectSub">—</div></div>
+        <div class="kpi"><div class="kt" id="sObsKt">观测图 G_t 传染损失</div><div class="kv amber" id="sObs">—</div><div class="ks" id="sObsSub">—</div></div>
+        <div class="kpi"><div class="kt" id="sPredKt">FM 预测图传染损失</div><div class="kv red" id="sPred">—</div><div class="ks" id="sPredSub">—</div></div>
+        <div class="kpi"><div class="kt" id="sRoundsKt">传播轮数 / 受困 (&gt;10% TVL)</div><div class="kv blue" id="sRounds">—</div><div class="ks" id="sRoundsSub">—</div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><div class="ph"><div class="pt" id="cascTitle">逐轮传播路径 (FM 预测图)</div></div><div class="pb"><div class="dag" style="height:335px"><svg id="cascSvg" width="100%" height="100%" viewBox="0 0 780 330" preserveAspectRatio="xMidYMid meet"></svg></div><div class="ps" id="simText"></div></div></div>
+        <div class="panel"><div class="ph"><div class="pt">受波及协议 (预测图 vs 观测图)</div></div><div class="pb flush tbl-scroll" style="max-height:385px"><table><thead><tr><th>轮次</th><th>协议</th><th>首次受损来源</th><th>预测图损失</th><th>观测图损失</th><th>占 TVL</th><th>受困</th></tr></thead><tbody id="simBody"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- PRO VIEW 4 -->
+    <section class="view" id="vAudit">
+      <div class="grid2">
+        <div class="panel">
+          <div class="ph"><div class="pt">HHI 集中度扫描 (HHI ≥ 0.5，排除底座)</div></div>
+          <div class="pb flush tbl-scroll"><table><thead><tr><th>协议</th><th>关联敞口</th><th>HHI</th><th>最大对手方</th><th>最大协议对手方</th><th>FM 占池收缩</th></tr></thead><tbody id="hhiBody"></tbody></table></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div class="pt">Layer-4 门控记录 (M6 → M7)</div><span class="ps">Contingency: critical &amp; ≥0.90 · Reduce: elevated+ &amp; ≥0.75</span></div>
+          <div class="note" id="gateNote">—</div>
+          <div class="pb flush tbl-scroll"><table><thead><tr><th>窗口</th><th>协议</th><th>M6</th><th>M7</th><th>门控规则</th><th>到期</th></tr></thead><tbody id="gateBody"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Shared 3D 4-Tier × 4-Sector Architectural Topology -->
+  <div id="threeWrap">
+    <div class="t3-top">
+      <div class="t3-bar"><span class="ps" id="threeNote">—</span></div>
+      <div class="t3-bar">
+        <span class="lbl">标签</span>
+        <button type="button" class="t3-btn active" data-tlbl="key" onclick="set3dOpt('lbl','key')">核心</button>
+        <button type="button" class="t3-btn" data-tlbl="all" onclick="set3dOpt('lbl','all')">全部</button>
+        <button type="button" class="t3-btn" data-tlbl="focus" onclick="set3dOpt('lbl','focus')">焦点链</button>
+        <span class="lbl" style="margin-left:4px">边</span>
+        <button type="button" class="t3-btn active" data-tedg="focus" onclick="set3dOpt('edg','focus')">焦点传导</button>
+        <button type="button" class="t3-btn" data-tedg="drop" onclick="set3dOpt('edg','drop')">预计撤出边</button>
+        <button type="button" class="t3-btn" data-tedg="all" onclick="set3dOpt('edg','all')">全网</button>
+        <button type="button" class="t3-btn" onclick="zoom3d(-50)" title="放大">＋</button>
+        <button type="button" class="t3-btn" onclick="zoom3d(50)" title="缩小">－</button>
+        <button type="button" class="t3-btn" onclick="reset3d()" title="重置视角">重置</button>
+      </div>
+    </div>
+    <div id="threeDecks">
+      <div class="deck-tag" style="border-left-color:#9333ea">L0 底层储备层<span>USDC · USDT · WETH · WBTC</span></div>
+      <div class="deck-tag" style="border-left-color:#0284c7">L1 核心底座层<span>TVL ≥ $1B 基础设施</span></div>
+      <div class="deck-tag" style="border-left-color:#059669">L2 主流协议层<span>$100M – $1B · 四赛道象限</span></div>
+      <div class="deck-tag" style="border-left-color:#e11d48">L3 垂直与高敏层<span>&lt; $100M · 末端敞口</span></div>
+    </div>
+    <div id="threeMount" style="width:100%; height:100%"></div>
+    <div id="threeLabels"></div>
+    <div id="threeTip"></div>
+    <div class="t3-leg">
+      <div>
+        <span>纵向 = 体量层级 (L0→L3) · 水平四象限 = 借贷 / 质押 / 稳定币&amp;RWA / 交易&amp;跨链 · </span>
+        <span style="color:#0284c7">━ 上游持仓</span> · <span style="color:#d97706">━ 下游债权</span> · <span class="red">━ 预计撤出</span>
+      </div>
+      <div class="mu">拖拽旋转 · 滚轮缩放 · 双击切换穿透</div>
+    </div>
+  </div>
+</div>
+<script>
+const S = {
+  ed: "user", theme: "light", h: "4",
+  uView: "uHome", uLeft: "quad", uLens: "alpha", uSimMode: "depeg", uPreset: "depeg_usdc_usdt", uSimLast: null,
+  lens: "alpha", bt: "wf", wfBoard: "whale", trkAmp: "all", left: "dag", simMode: "protocol",
+  focus: null, qHover: null, net: null, hz: null, hist: null, graph: null,
+  three: null, t3Lbl: "key", t3Edg: "focus", t3Hover: null, t3Spot: null, layoutCache: {}
+};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const isNum = v => v !== null && v !== undefined && Number.isFinite(Number(v));
+function usd(v) {
+  if (!isNum(v)) return "—";
+  const n = Number(v), a = Math.abs(n), s = n < 0 ? "-" : "";
+  if (a >= 1e9) return s + "$" + (a / 1e9).toFixed(2) + "B";
+  if (a >= 1e6) return s + "$" + (a / 1e6).toFixed(2) + "M";
+  if (a >= 1e3) return s + "$" + (a / 1e3).toFixed(1) + "K";
+  return s + "$" + a.toFixed(0);
+}
+function pct(v, d = 1) { return isNum(v) ? Number(v).toFixed(d) + "%" : "—"; }
+function frac(v, d = 1) { return isNum(v) ? (100 * Number(v)).toFixed(d) + "%" : "—"; }
+function num(v, d = 2) { return isNum(v) ? Number(v).toFixed(d) : "—"; }
+const hzShort = h => h === "1" ? "7D" : h === "8" ? "60D" : "30D";
+
+const CAT_ZH = {
+  "Lending": "借贷", "Dexes": "DEX", "Dexs": "DEX", "Liquid Staking": "流动性质押",
+  "CDP": "抵押稳定币", "Bridge": "跨链桥", "Canonical Bridge": "官方桥", "Cross Chain": "跨链",
+  "Yield": "收益池", "Yield Aggregator": "收益聚合", "RWA": "RWA", "Restaking": "再质押",
+  "Liquid Restaking": "流动性再质押", "Derivatives": "衍生品", "Risk Curators": "金库风控",
+  "Onchain Capital Allocator": "链上资管", "Basis Trading": "基差稳定币", "Staking Pool": "质押池",
+  "Chain": "公链储备", "Farm": "挖矿", "Leveraged Farming": "杠杆挖矿", "Liquidity manager": "流动性管理"
+};
+function catZh(c, isTok) {
+  if (isTok) return "储备代币";
+  if (!c || c === "Unknown") return "协议";
+  return CAT_ZH[c] || c;
+}
+function actionZh(a) {
+  if (a === "Contingency") return "应急处置";
+  if (a === "Recommend-Reduce") return "建议减仓";
+  if (a === "Investigate") return "重点排查";
+  if (a === "Monitor") return "常规观察";
+  return a || "—";
+}
+function actionBadge(a, lite) {
+  if (!a) return '<span class="mu">—</span>';
+  const c = a === "Contingency" || a === "Recommend-Reduce" ? "b-red" : a === "Investigate" ? "b-amber" : "b-mu";
+  return `<span class="b ${c}">${esc(lite ? actionZh(a) : `${actionZh(a)} · ${a}`)}</span>`;
+}
+const hzDropWarnPct = h => String(h) === "1" ? 5 : String(h) === "8" ? 25 : 15;
+function edgeRetainBadge(p) {
+  if (!isNum(p)) return '<span class="mu">—</span>';
+  const r = Number(p);
+  if (r >= 0.90) return '<span class="b b-green">稳健留存</span>';
+  if (r >= 0.70) return '<span class="b b-amber">部分净赎回</span>';
+  return '<span class="b b-red">重度撤出</span>';
+}
+function userVerdict(n) {
+  if (!n) return { cls: "b-mu", txt: "—" };
+  const warnPct = hzDropWarnPct(S.h);
+  const topAct = n.m7TicketAction || n.alphaTicketAction;
+  if (topAct === "Contingency" || topAct === "Recommend-Reduce") return { cls: "b-red", txt: "建议减仓" };
+  if (n.alphaInQueue || (!n.isBaseHub && ((isNum(n.poolDropPct) && n.poolDropPct >= warnPct * 1.25) || (isNum(n.pStress) && n.pStress >= 0.60)))) return { cls: "b-red", txt: "高危排雷" };
+  if (n.m7InQueue || (!n.isBaseHub && isNum(n.poolDropPct) && n.poolDropPct >= warnPct)) return { cls: "b-amber", txt: "重点排查" };
+  if (!n.isBaseHub && isNum(n.hhi) && n.hhi >= 0.65) return { cls: "b-amber", txt: "单点集中" };
+  if (n.isBaseHub) return { cls: "b-blue", txt: "核心底座" };
+  return { cls: "b-green", txt: "常规观察" };
+}
+function avaHtml(idOrNode, lg) {
+  const nm = S.net ? nodeMap() : {};
+  const n = typeof idOrNode === "object" && idOrNode ? idOrNode : (nm[String(idOrNode)] || (S.graph && S.graph.nodes[String(idOrNode)]) || {});
+  const name = n.name || String(idOrNode || "?");
+  const cls = lg ? "ava-lg" : "ava";
+  const mono = name.replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g, "").slice(0, 2).toUpperCase() || "DX";
+  if (n.logo) return `<img class="${cls}" src="${esc(n.logo)}" alt="" loading="lazy" onerror="this.style.display='none'" />`;
+  return `<span class="${cls} ava-fb">${esc(mono)}</span>`;
+}
+
+const netH = () => S.net[`h${S.h}`];
+const nodeMap = () => { const h = netH(); if (!h._map) h._map = Object.fromEntries(h.nodes.map(n => [n.id, n])); return h._map; };
+const hzH = () => S.hz[S.h];
+const gName = id => ((S.graph && S.graph.nodes[id]) || {}).name || id;
+const STABLE_DEPEG_IDS = ["USDC", "USDT", "USDE", "PYUSD"];
+
+async function init() {
+  let initUview = null, initWfBoard = null;
+  try {
+    if (typeof location !== "undefined" && location.pathname) {
+      const p = location.pathname.toLowerCase();
+      const q = new URLSearchParams(location.search || "");
+      if (p.endsWith("/pro") || p.endsWith("/compliance") || q.get("edition") === "pro") S.ed = "pro";
+      else if (q.get("edition") === "user" || p.endsWith("/user")) S.ed = "user";
+      if (q.get("uview")) initUview = q.get("uview");
+      if (q.get("wfboard")) initWfBoard = q.get("wfboard");
+      if (q.get("theme") === "dark" || q.get("theme") === "light") S.theme = q.get("theme");
+    }
+    if (typeof localStorage !== "undefined" && !(typeof location !== "undefined" && new URLSearchParams(location.search || "").get("theme"))) {
+      const savedTheme = localStorage.getItem("dx_theme");
+      if (savedTheme === "dark" || savedTheme === "light") S.theme = savedTheme;
+    }
+  } catch (_) {}
+  applyThemeDom();
+  applyEditionDom();
+
+  await loadLiveBundles();
+  const prefer = ["1599", "587", "182", "118"].find(k => nodeMap()[k]);
+  const firstMid = netH().nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer).sort((a, b) => (b.poolDropPct ?? -1) - (a.poolDropPct ?? -1))[0];
+  S.focus = prefer || (firstMid ? firstMid.id : netH().nodes[0].id);
+  fillWfSelect();
+  fillUserWfSelect();
+  refresh();
+  if (initWfBoard === "alpha" || initWfBoard === "whale") setWfBoard(initWfBoard);
+  if (initUview && $(initUview)) showUserView(initUview);
+  checkLiveStatusSilently();
+}
+
+async function loadLiveBundles() {
+  const bust = "t=" + Date.now();
+  const get = p => fetch(p + "?" + bust, { cache: "no-store" }).then(r => { if (!r.ok) throw new Error(p + " " + r.status); return r.json(); });
+  [S.net, S.hz, S.hist, S.graph] = await Promise.all([
+    get("/assets/live-network-3d.json"), get("/assets/live-horizons.json"),
+    get("/assets/live-history.json"), get("/assets/live-contagion-graph.json"),
+  ]);
+}
+
+async function checkLiveStatusSilently() {
+  try {
+    const r = await fetch("/api/live-status", { cache: "no-store" });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d && d.meta && d.meta.updatedAt) S.liveUpdatedAt = d.meta.updatedAt;
+    if (d && d.job && d.job.state === "running") pollLiveSync();
+    applyEditionDom();
+  } catch (_) {}
+}
+
+async function triggerLiveSync() {
+  const btn = $("syncBtn");
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = "↻ 启动容器中…";
+  try {
+    const r = await fetch("/api/refresh?force=true", { method: "POST" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    pollLiveSync();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "↻ 同步失败";
+    setTimeout(() => { if ($("syncBtn")) $("syncBtn").textContent = "↻ 实时同步"; }, 4000);
+  }
+}
+
+function pollLiveSync() {
+  const btn = $("syncBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "↻ 链上推理中…"; }
+  const prevUpd = S.liveUpdatedAt || "";
+  const timer = setInterval(async () => {
+    try {
+      const r = await fetch("/api/live-status", { cache: "no-store" });
+      if (!r.ok) return;
+      const d = await r.json(), st = (d && d.job) || {};
+      if (st.state === "running") {
+        const sec = st.startedAt ? Math.max(1, Math.round((Date.now() - Date.parse(st.startedAt)) / 1000)) : "";
+        if (btn) btn.textContent = `↻ 推理中 ${sec ? sec + "s" : "…"}`;
+        return;
+      }
+      clearInterval(timer);
+      if (st.state === "error") {
+        if (btn) { btn.disabled = false; btn.textContent = "↻ 稍后重试"; }
+        return;
+      }
+      if (d.meta && d.meta.updatedAt) S.liveUpdatedAt = d.meta.updatedAt;
+      await loadLiveBundles();
+      S.layoutCache = {};
+      if (!nodeMap()[S.focus]) S.focus = netH().nodes[0].id;
+      fillWfSelect(); fillUserWfSelect(); refresh();
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = prevUpd !== S.liveUpdatedAt ? "✓ 已更新" : "✓ 已是最新";
+        setTimeout(() => { if ($("syncBtn")) $("syncBtn").textContent = "↻ 实时同步"; }, 3500);
+      }
+    } catch (_) {}
+  }, 5000);
+}
+
+function applyThemeDom() {
+  if (document.documentElement) document.documentElement.setAttribute("data-theme", S.theme);
+  if ($("themeBtn")) $("themeBtn").textContent = S.theme === "dark" ? "☀ 浅色" : "☾ 深色";
+}
+function toggleTheme() {
+  S.theme = S.theme === "dark" ? "light" : "dark";
+  try { if (typeof localStorage !== "undefined") localStorage.setItem("dx_theme", S.theme); } catch (_) {}
+  applyThemeDom();
+  if (S.net) {
+    S.layoutCache.tex = {};
+    renderUserFocus(); renderFocus(); runSim(); runUserSim();
+    if (is3dActive()) build3d();
+  }
+}
+
+function applyEditionDom() {
+  $("edBtnUser").classList.toggle("active", S.ed === "user");
+  $("edBtnPro").classList.toggle("active", S.ed === "pro");
+  $("edUser").classList.toggle("active", S.ed === "user");
+  $("edPro").classList.toggle("active", S.ed === "pro");
+  $("hzLabel").textContent = S.ed === "user" ? "窗口" : "Horizon";
+  $("hBtn1").textContent = S.ed === "user" ? "7D" : "1W";
+  $("hBtn4").textContent = S.ed === "user" ? "30D" : "4W";
+  $("hBtn8").textContent = S.ed === "user" ? "60D" : "8W";
+  if (S.graph) {
+    const liveBadge = S.liveUpdatedAt ? ` · 云端同步 ${S.liveUpdatedAt.slice(5, 16).replace("T", " ")} UTC` : " · 每 6h 自动更新";
+    $("dataTag").textContent = S.ed === "user"
+      ? `${S.graph.snapshotDate} · ${netH().fullNodes} 节点 · 锁价净流量口径 (已剔除 ETH/BTC 币价波动)${liveBadge}`
+      : `DeFiLlama ${S.graph.snapshotDate} · DeXposure-FM v4 · 期初锁价净流量口径${liveBadge}`;
+  }
+  syncThreeHost();
+}
+function setEdition(ed) {
+  S.ed = ed === "pro" ? "pro" : "user";
+  try {
+    if (typeof history !== "undefined" && history.replaceState && typeof location !== "undefined") {
+      const url = new URL(location.href);
+      if (S.ed === "pro") url.searchParams.set("edition", "pro");
+      else url.searchParams.delete("edition");
+      history.replaceState(null, "", url.pathname + (url.search || ""));
+    }
+  } catch (_) {}
+  applyEditionDom();
+  if (S.net && is3dActive()) build3d();
+}
+
+function setHorizon(h) {
+  S.h = String(h);
+  document.querySelectorAll("#hPills .hbtn").forEach(b => b.classList.toggle("active", b.dataset.h === S.h));
+  refresh();
+}
+function showUserView(id) {
+  S.uView = id;
+  document.querySelectorAll(".utab").forEach(b => b.classList.toggle("active", b.dataset.uview === id));
+  document.querySelectorAll(".uview").forEach(v => v.classList.toggle("active", v.id === id));
+  syncThreeHost();
+  if (id === "uHome" && S.uLeft === "3d") build3d();
+}
+function showView(id) {
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
+  syncThreeHost();
+  if (id === "vOverview" && S.left === "3d") build3d();
+}
+
+function refresh() {
+  applyEditionDom();
+  renderKpis(); fillFocusSelect(); renderFocus(); renderRanking();
+  renderWf(); renderV4Holdout(); renderCrisis(); renderP29(); fillSimSelect(); runSim(); renderHhi(); renderGate();
+  renderUserHome(); filterUserFocusSelect(); renderUserQuickChips(); renderUserFocus(); renderUserList();
+  fillUserSimSelect(); runUserSim(); renderUserGuide(); renderUserTrack();
+  if (is3dActive()) build3d();
+}
+
+// =========================================================================
+// TIERED QUADRANT + RESERVE RAIL + DIRECTIONAL EXPOSURE MAP (2D SVG)
+// =========================================================================
+function drawQuadrantSvg(svgId, lite) {
+  const el = $(svgId); if (!el) return;
+  const dk = S.theme === "dark", h = netH(), nm = nodeMap(), pi = pIdx();
+  const warnPct = hzDropWarnPct(S.h), sevCut = 0.70;
+  const spot = S.qHover || S.focus;
+  const X0 = 112, X1 = 804, Y0 = 28, Y1 = 384;
+  const xOf = sharePct => X0 + (Math.max(0, Math.min(100, sharePct || 0)) / 100) * (X1 - X0);
+  const yOf = dropPct => Y1 - Math.sqrt(Math.max(0, Math.min(100, dropPct || 0)) / 100) * (Y1 - Y0);
+  const xMid = xOf(50), yMid = yOf(warnPct);
+
+  const reserves = ["WETH", "USDC", "USDT", "WBTC", "USDE", "PYUSD"].filter(k => nm[k]);
+  const mustShow = h.nodes.filter(n => !n.isTokenIssuer && (n.alphaInQueue || n.m7InQueue || n.id === spot));
+  const mustIds = new Set(mustShow.map(n => n.id));
+  const extraProtos = h.nodes.filter(n => !n.isTokenIssuer && !mustIds.has(n.id) && (n.exposureUsd >= 1.5e7 || (n.exposureUsd >= 5e6 && (n.poolDropPct || 0) >= warnPct)))
+    .sort((a, b) => b.exposureUsd - a.exposureUsd).slice(0, Math.max(0, 58 - mustShow.length));
+  const protos = [...mustShow, ...extraProtos];
+
+  const pts = {};
+  reserves.forEach((id, i) => {
+    pts[id] = { x: 46, y: 58 + i * 54, r: 13.5, n: nm[id], isRes: true };
+  });
+  protos.forEach(n => {
+    const r = Math.max(8.5, Math.min(17.5, 5.2 + (Math.log10(Math.max(n.exposureUsd || 1, 1e6)) - 5.5) * 3.2));
+    pts[n.id] = { x: xOf(n.topCounterpartySharePct), y: yOf(n.poolDropPct), r, n, isRes: false };
+  });
+  // Gentle 2D overlap relaxation inside plot bounds while preserving true quadrant side
+  const pArr = Object.values(pts).filter(p => !p.isRes);
+  for (let it = 0; it < 14; it++) {
+    for (let i = 0; i < pArr.length; i++) for (let j = i + 1; j < pArr.length; j++) {
+      const a = pArr[i], b = pArr[j], dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 0.1, minD = a.r + b.r + 3;
+      if (dist < minD) {
+        const push = (minD - dist) * 0.35, ux = dx / dist, uy = dy / dist;
+        a.x = Math.max(X0 + a.r, Math.min(X1 - a.r, a.x - ux * push));
+        b.x = Math.max(X0 + b.r, Math.min(X1 - b.r, b.x + ux * push));
+        a.y = Math.max(Y0 + a.r, Math.min(Y1 - a.r, a.y - uy * push));
+        b.y = Math.max(Y0 + b.r, Math.min(Y1 - b.r, b.y + uy * push));
+      }
+    }
+  }
+
+  const cUp = dk ? "#38bdf8" : "#0284c7", cDown = dk ? "#fbbf24" : "#d97706", cDrop = dk ? "#fb7185" : "#e11d48";
+  const tx = dk ? "#e2e8f0" : "#1f2421", mu = dk ? "#64748b" : "#787e7a", grid = dk ? "rgba(148,163,184,0.16)" : "#dfddd4";
+
+  let defs = `<defs>
+    <marker id="arrUp_${svgId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${cUp}"/></marker>
+    <marker id="arrDn_${svgId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${cDown}"/></marker>
+    <marker id="arrDr_${svgId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${cDrop}"/></marker>`;
+  for (const [id, p] of Object.entries(pts)) {
+    defs += `<clipPath id="cp_${svgId}_${esc(id)}"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(p.r - 1.5).toFixed(1)}"/></clipPath>`;
+  }
+  defs += `</defs>`;
+
+  // Background Quadrant Zones + Reserve Rail
+  const q1Bg = dk ? "rgba(244,63,94,0.08)" : "rgba(204,75,49,0.06)";
+  const q2Bg = dk ? "rgba(245,158,11,0.06)" : "rgba(173,110,24,0.05)";
+  const q3Bg = dk ? "rgba(16,185,129,0.05)" : "rgba(38,104,75,0.04)";
+  const q4Bg = dk ? "rgba(56,189,248,0.05)" : "rgba(39,88,130,0.04)";
+  let s = defs;
+  s += `<rect x="8" y="${Y0}" width="76" height="${Y1 - Y0}" rx="8" fill="${dk ? "rgba(192,132,252,0.06)" : "#f3efe9"}" stroke="${grid}"/>`;
+  s += `<text x="46" y="${Y0 + 16}" text-anchor="middle" fill="${dk ? "#c084fc" : "#6e3ea0"}" font-size="10.5" font-weight="700">L0 储备层</text>`;
+
+  s += `<rect x="${X0}" y="${Y0}" width="${xMid - X0}" height="${yMid - Y0}" fill="${q2Bg}"/>`;
+  s += `<rect x="${xMid}" y="${Y0}" width="${X1 - xMid}" height="${yMid - Y0}" fill="${q1Bg}"/>`;
+  s += `<rect x="${X0}" y="${yMid}" width="${xMid - X0}" height="${Y1 - yMid}" fill="${q3Bg}"/>`;
+  s += `<rect x="${xMid}" y="${yMid}" width="${X1 - xMid}" height="${Y1 - yMid}" fill="${q4Bg}"/>`;
+  s += `<rect x="${X0}" y="${Y0}" width="${X1 - X0}" height="${Y1 - Y0}" fill="none" stroke="${grid}"/>`;
+  s += `<line x1="${xMid}" y1="${Y0}" x2="${xMid}" y2="${Y1}" stroke="${grid}" stroke-dasharray="4,4"/>`;
+  s += `<line x1="${X0}" y1="${yMid}" x2="${X1}" y2="${yMid}" stroke="${grid}" stroke-dasharray="4,4"/>`;
+
+  // Quadrant Watermark Labels (Self-explanatory layout)
+  s += `<text x="${X0 + 10}" y="${Y0 + 18}" fill="${dk ? "#fbbf24" : "#9a6012"}" font-size="11" font-weight="700">左上 · 分散撤资区 (净撤出≥${warnPct}% · 分散)</text>`;
+  s += `<text x="${X1 - 10}" y="${Y0 + 18}" text-anchor="end" fill="${cDrop}" font-size="11" font-weight="700">右上 · 双高排雷区 (净撤出≥${warnPct}% + 单点集中≥50%)</text>`;
+  s += `<text x="${X0 + 10}" y="${Y1 - 10}" fill="${dk ? "#34d399" : "#26684b"}" font-size="11" font-weight="700">左下 · 分散稳健区 (低净撤出 · 多元对手方)</text>`;
+  s += `<text x="${X1 - 10}" y="${Y1 - 10}" text-anchor="end" fill="${dk ? "#38bdf8" : "#275882"}" font-size="11" font-weight="700">右下 · 单点重仓区 (低净撤出 · 单一依赖≥50%)</text>`;
+
+  // Axis Ticks
+  [0, 25, 50, 75, 100].forEach(xv => {
+    const xx = xOf(xv);
+    s += `<text x="${xx}" y="${Y1 + 15}" text-anchor="middle" fill="${mu}" font-size="10" font-family="JetBrains Mono">${xv}%</text>`;
+  });
+  [0, 5, 15, 30, 60, 100].forEach(yv => {
+    const yy = yOf(yv);
+    s += `<line x1="${X0 - 4}" y1="${yy}" x2="${X0}" y2="${yy}" stroke="${grid}"/>`;
+    s += `<text x="${X0 - 7}" y="${yy + 3}" text-anchor="end" fill="${mu}" font-size="9.5" font-family="JetBrains Mono">${yv}%</text>`;
+  });
+  s += `<text x="${(X0 + X1) / 2}" y="418" text-anchor="middle" fill="${mu}" font-size="10.5" font-weight="600">横轴：最大单一对手方敞口占比 →   |   纵轴：锁价预计占池净撤出率 (${hzShort(S.h)}) ↑   |   红圈 = Alpha 副榜 · 橙圈 = M7 主榜</text>`;
+
+  // Directional Exposure Curves for Focused / Hovered Node
+  const nbrs = new Set([spot]);
+  if (spot && pts[spot]) {
+    const sp = pts[spot];
+    const relEdges = [];
+    for (const e of S.graph.edges) {
+      if (e[0] === spot && pts[e[1]]) relEdges.push({ from: pts[e[1]], to: sp, w: e[2], p: e[pi], kind: "up", peer: e[1] });
+      else if (e[1] === spot && pts[e[0]]) relEdges.push({ from: sp, to: pts[e[0]], w: e[2], p: e[pi], kind: "dn", peer: e[0] });
+    }
+    relEdges.sort((a, b) => b.w - a.w).slice(0, 14).forEach(ed => {
+      nbrs.add(ed.peer);
+      const dx = ed.to.x - ed.from.x, dy = ed.to.y - ed.from.y, L = Math.sqrt(dx * dx + dy * dy) || 1;
+      const sx = ed.from.x + (dx / L) * (ed.from.r + 2), sy = ed.from.y + (dy / L) * (ed.from.r + 2);
+      const tx2 = ed.to.x - (dx / L) * (ed.to.r + 5), ty2 = ed.to.y - (dy / L) * (ed.to.r + 5);
+      const cx = (sx + tx2) / 2 - dy * 0.14, cy = (sy + ty2) / 2 + dx * 0.14;
+      const drop = isNum(ed.p) && ed.p < sevCut;
+      const stroke = drop ? cDrop : (ed.kind === "up" ? cUp : cDown);
+      const mk = drop ? `arrDr_${svgId}` : (ed.kind === "up" ? `arrUp_${svgId}` : `arrDn_${svgId}`);
+      const sw = Math.max(1.4, Math.min(3.8, Math.log10(Math.max(ed.w, 1e5)) - 4.3)).toFixed(1);
+      s += `<path d="M${sx.toFixed(1)},${sy.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${tx2.toFixed(1)},${ty2.toFixed(1)}" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-opacity="0.86" ${drop ? 'stroke-dasharray="4,3"' : ""} marker-end="url(#${mk})"/>`;
+    });
+  }
+
+  // Protocol & Reserve Circular Logo Nodes + Clean Labels
+  const placedLbl = [];
+  const allPts = [...Object.values(pts)].sort((a, b) => (a.n.id === spot ? 1 : 0) - (b.n.id === spot ? 1 : 0));
+  for (const p of allPts) {
+    const id = p.n.id, isFoc = id === spot, isNbr = nbrs.has(id);
+    const op = (!spot || isFoc || isNbr || p.isRes || p.n.alphaInQueue) ? "1" : "0.32";
+    const ring = p.isRes ? "#9333ea" : p.n.alphaInQueue ? "#e11d48" : p.n.m7InQueue ? "#d97706" : (!p.n.isBaseHub && (p.n.poolDropPct || 0) >= warnPct) ? "#e11d48" : p.n.isBaseHub ? "#0284c7" : "#059669";
+    const clickJs = p.isRes
+      ? (STABLE_DEPEG_IDS.includes(id) ? (lite ? `showUserView('uStress'); userRunDepeg('${esc(id)}')` : `simulateTokenDepeg('${esc(id)}')`) : "")
+      : `setFocus('${esc(id)}')`;
+    const mono = (p.n.name || id).slice(0, 2).toUpperCase();
+    s += `<g opacity="${op}" style="cursor:pointer" onclick="${clickJs}" onmouseenter="onQuadHover('${esc(id)}', event, ${lite ? "true" : "false"})" onmouseleave="onQuadHover(null)">`;
+    if (isFoc) s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(p.r + 4.5).toFixed(1)}" fill="none" stroke="${cUp}" stroke-width="2" stroke-dasharray="3,2"/>`;
+    s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.r.toFixed(1)}" fill="${dk ? "#0f172a" : "#ffffff"}" stroke="${ring}" stroke-width="${isFoc || p.n.alphaInQueue ? 2.6 : 2}"/>`;
+    if (p.n.logo) {
+      const d = (p.r - 1.5) * 2;
+      s += `<image href="${esc(p.n.logo)}" x="${(p.x - d / 2).toFixed(1)}" y="${(p.y - d / 2).toFixed(1)}" width="${d.toFixed(1)}" height="${d.toFixed(1)}" clip-path="url(#cp_${svgId}_${esc(id)})" preserveAspectRatio="xMidYMid slice"/>`;
+    } else {
+      s += `<text x="${p.x.toFixed(1)}" y="${(p.y + 3.5).toFixed(1)}" text-anchor="middle" fill="${tx}" font-size="8.5" font-weight="700">${esc(mono)}</text>`;
+    }
+    const wantLbl = p.isRes || isFoc || isNbr || p.n.alphaInQueue || p.n.m7InQueue || (p.n.poolDropPct || 0) >= warnPct * 1.4 || p.n.exposureUsd >= 6e8;
+    if (wantLbl) {
+      const lbl = (p.n.name || id).slice(0, 13);
+      const lx = p.x, ly = p.y + p.r + 10.5, hw = lbl.length * 3.3 + 4;
+      let overlap = false;
+      if (!isFoc && !p.isRes) {
+        for (const b of placedLbl) if (lx - hw < b[2] && lx + hw > b[0] && ly - 8 < b[3] && ly + 3 > b[1]) { overlap = true; break; }
+      }
+      if (!overlap) {
+        placedLbl.push([lx - hw, ly - 8, lx + hw, ly + 3]);
+        s += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" fill="${isFoc ? cUp : tx}" font-size="${isFoc ? 10.5 : 9.5}" font-weight="${isFoc ? 700 : 600}">${esc(lbl)}</text>`;
+      }
+    }
+    s += `</g>`;
+  }
+  el.innerHTML = s;
+}
+
+function onQuadHover(id, ev, lite) {
+  const tip = $("quadTip");
+  if (!id || !ev || !tip) { if (tip) tip.style.display = "none"; return; }
+  const n = nodeMap()[id] || {}, box = $("quadBox");
+  if (!box || !box.getBoundingClientRect) return;
+  const r = box.getBoundingClientRect();
+  const strLine = !n.isTokenIssuer && isNum(n.pStress) ? ` · 净挤兑率 <span class="red">${pct(n.pStress * 100, 1)}</span>` : "";
+  tip.innerHTML = `<div style="font-weight:700;font-size:12.5px">${esc(n.name || id)} <span class="mu" style="font-weight:400">· ${esc(catZh(n.category, n.isTokenIssuer))}</span></div>
+    <div class="mono" style="margin-top:4px;line-height:1.55">
+      敞口：<b>${usd(n.exposureUsd)}</b>${n.isTokenIssuer ? "" : ` / TVL ${usd(n.totalTvlUsd)}`}<br/>
+      预计锁价净撤出：<span class="red">${pct(n.poolDropPct, 1)}</span>${strLine}<br/>
+      最大依赖：${esc(n.topCounterpartyName ?? "—")} ${pct(n.topCounterpartySharePct, 0)}
+    </div>`;
+  tip.style.display = "block";
+  tip.style.left = Math.min(r.width - 250, Math.max(8, ev.clientX - r.left + 12)) + "px";
+  tip.style.top = Math.min(r.height - 105, Math.max(8, ev.clientY - r.top + 12)) + "px";
+}
+
+// =========================================================================
+// MODE 1: 风险速览 (Clean, Self-Explanatory Visual Layout — Minimal Text)
+// =========================================================================
+function renderUserHome() {
+  const h = netH(), wf = S.hist.liveWalkForwardSummary || {}, awf = S.hist.alphaWalkForwardSummary || {};
+  const warnPct = hzDropWarnPct(S.h);
+  const mid = h.nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer && n.exposureUsd >= 5e6);
+  const highOut = mid.filter(n => (n.poolDropPct || 0) >= warnPct || (n.pStress || 0) >= 0.55);
+  const highConc = mid.filter(n => (n.topCounterpartySharePct || 0) >= 70);
+  const depeg20 = simulateContagionTraced(simSnap(true), ["USDC", "USDT"], { shockFraction: 0.2, shockMode: "depeg" });
+  const hasAwf = (awf.alphaTotal || 0) > 0;
+
+  $("uCards").innerHTML = `
+    <div class="kpi click" onclick="setUserLens('alpha')">
+      <div class="kt">高净撤出协议 (≥${warnPct}% · ${hzShort(S.h)})</div>
+      <div class="kv red">${highOut.length}</div>
+      <div class="ks">锁价净流量口径 · 中坚池 (${mid.length} 家)</div>
+    </div>
+    <div class="kpi click" onclick="setUserLens('hhi')">
+      <div class="kt">单点集中协议 (≥70%)</div>
+      <div class="kv amber">${highConc.length}</div>
+      <div class="ks">单一对手方敞口占比 ≥ 70%</div>
+    </div>
+    <div class="kpi click" onclick="showUserView('uStress'); runUserPreset('depeg_usdc_usdt')">
+      <div class="kt">USDC/USDT -20% 冲击敞口</div>
+      <div class="kv blue">${usd(depeg20.total_loss)}</div>
+      <div class="ks">波及 ${depeg20.per_node.length} 家 · 重伤 ${depeg20.affected_count} 家 (&gt;10% TVL)</div>
+    </div>
+    <div class="kpi click" onclick="showUserView('uTrack')">
+      <div class="kt">2026 双榜交割精确率</div>
+      <div class="kv green">${pct(wf.m7StressedPrecisionPct)}</div>
+      <div class="ks">巨鲸主榜 vs ${pct(wf.m2StressedPrecisionPct)} · ${hasAwf ? `Alpha副榜 ${pct(awf.alphaPrecisionPct)} (${num(awf.alphaLiftVsBaseRate, 2)}x)` : "锁价净赎回"}</div>
+    </div>`;
+}
+
+function filterUserFocusSelect() {
+  const q = ($("uQuickSearch").value || "").trim().toLowerCase();
+  const all = netH().nodes.filter(n => !n.isTokenIssuer);
+  const filtered = q ? all.filter(n => `${n.name} ${n.category} ${catZh(n.category)}`.toLowerCase().includes(q)) : all;
+  const list = filtered.length ? filtered : all;
+  const mid = list.filter(n => !n.isBaseHub).sort((a, b) => (b.poolDropPct ?? -1) - (a.poolDropPct ?? -1));
+  const hub = list.filter(n => n.isBaseHub).sort((a, b) => b.exposureUsd - a.exposureUsd);
+  const opt = n => `<option value="${esc(n.id)}">${esc(n.name)} · ${esc(catZh(n.category))} · -${pct(n.poolDropPct)}</option>`;
+  let html = "";
+  if (hub.length) html += `<optgroup label="核心底座 (TVL ≥ $1B)">${hub.map(opt).join("")}</optgroup>`;
+  if (mid.length) html += `<optgroup label="中腰部协议">${mid.map(opt).join("")}</optgroup>`;
+  $("uFocusSel").innerHTML = html;
+  if (q && filtered.length && !filtered.some(n => n.id === S.focus)) setFocus(filtered[0].id);
+  else if (nodeMap()[S.focus]) $("uFocusSel").value = S.focus;
+}
+
+function renderUserQuickChips() {
+  const nm = nodeMap();
+  const fixed = ["1599", "182", "118", "4133"].filter(id => nm[id]);
+  const alphaTop = (hzH().workbench_case.review.alphaQueue || []).map(q => String(q.entityId)).filter(id => nm[id]).slice(0, 3);
+  const fallbackDrop = netH().nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer && n.exposureUsd >= 1e7)
+    .sort((a, b) => (b.poolDropPct || 0) - (a.poolDropPct || 0)).slice(0, 2).map(n => n.id);
+  const ids = [...new Set([...fixed, ...(alphaTop.length ? alphaTop : fallbackDrop)])];
+  $("uQuickChips").innerHTML = ids.map(id => {
+    const n = nm[id];
+    const tag = n.alphaInQueue ? `<span class="red" style="font-size:10px;font-weight:700">Alpha#${n.alphaRank}</span>` : "";
+    return `<button type="button" class="qchip ${id === S.focus ? "active" : ""}" onclick="setFocus('${esc(id)}')">${avaHtml(n, false)}<span>${esc(n.name)}</span>${tag}</button>`;
+  }).join("");
+}
+
+function setUserLeftMode(m) {
+  S.uLeft = m;
+  $("uModeQuad").classList.toggle("active", m === "quad");
+  $("uModeFlow").classList.toggle("active", m === "flow");
+  $("uMode3d").classList.toggle("active", m === "3d");
+  $("uQuadWrap").style.display = m === "quad" ? "flex" : "none";
+  $("uFlowWrap").style.display = m === "flow" ? "flex" : "none";
+  syncThreeHost();
+  if (m === "quad") drawQuadrantSvg("quadSvg", true);
+  else if (m === "3d") build3d();
+}
+
+function renderUserFocus() {
+  const n = nodeMap()[S.focus]; if (!n) return;
+  const v = userVerdict(n), warnPct = hzDropWarnPct(S.h);
+  const dropVal = n.poolDropPct || 0, topShare = n.topCounterpartySharePct || 0;
+  const dropW = Math.min(100, Math.max(3, dropVal * 1.5)).toFixed(0);
+  const concW = Math.min(100, Math.max(3, topShare)).toFixed(0);
+  const spillW = isNum(n.spilloverPredUsd) ? Math.min(100, Math.max(4, (Math.log10(Math.max(n.spilloverPredUsd, 1e4)) - 4) * 20)).toFixed(0) : "0";
+  const canDepegPeer = STABLE_DEPEG_IDS.includes(String(n.topCounterpartyId || ""));
+  const boardBadges = `${n.m7InQueue ? ` <span class="b b-amber" style="vertical-align:middle">M7 主榜 #${n.m7Rank}</span>` : ""}${n.alphaInQueue ? ` <span class="b b-red" style="vertical-align:middle">Alpha 副榜 #${n.alphaRank}</span>` : ""}`;
+  const pStrLbl = isNum(n.pStress) ? `挤兑率 p̂ ${pct(n.pStress * 100, 1)}` : usd(n.expectedLossUsd);
+
+  $("uHealthCard").innerHTML = `
+    <div class="sc-top">
+      <div class="sc-id">
+        ${avaHtml(n, true)}
+        <div>
+          <div class="sc-name">${esc(n.name)} <span class="b ${v.cls}" style="vertical-align:middle;margin-left:4px">${esc(v.txt)}</span>${boardBadges}</div>
+          <div class="sc-meta">${esc(catZh(n.category, n.isTokenIssuer))} · TVL <b class="mono">${usd(n.totalTvlUsd)}</b> · 跨协议敞口 <b class="mono">${usd(n.exposureUsd)}</b> · 预期净缩减 <b class="mono">${usd(n.expectedLossUsd)}</b></div>
+        </div>
+      </div>
+      <div class="ctl">
+        ${canDepegPeer ? `<button type="button" class="btn" onclick="showUserView('uStress'); userRunDepeg('${esc(n.topCounterpartyId)}')">${esc(n.topCounterpartyName)} 脱锚推演</button>` : ""}
+        <button type="button" class="btn btn-red" onclick="userSimulateProtocol('${esc(n.id)}')">违约推演 →</button>
+      </div>
+    </div>
+    <div class="sc-metrics">
+      <div class="sc-cell">
+        <div class="sc-lbl"><span>预计锁价净撤出 (${hzShort(S.h)})</span><span class="mono ${isNum(n.pStress) && n.pStress >= 0.5 ? "red" : ""}">${pStrLbl}</span></div>
+        <div class="sc-val ${dropVal >= warnPct ? "red" : ""}">${pct(dropVal, 2)} <span class="mu" style="font-size:11.5px;font-weight:500">/ 信用流 ${pct(n.flowDropPct, 1)}</span></div>
+        <div class="sc-bar"><i style="width:${dropW}%;background:var(--red)"></i></div>
+      </div>
+      <div class="sc-cell">
+        <div class="sc-lbl"><span>最大单一依赖</span><span class="mono">HHI ${num(n.hhi)}</span></div>
+        <div class="sc-val ${topShare >= 70 ? "amber" : ""}">${esc((n.topCounterpartyName || "—").slice(0, 12))} · ${pct(topShare, 0)}</div>
+        <div class="sc-bar"><i style="width:${concW}%;background:var(--amber)"></i></div>
+      </div>
+      <div class="sc-cell">
+        <div class="sc-lbl"><span>50% 违约外溢冲击</span><span class="mono">重伤 ${n.spilloverPredDistressed ?? 0} 家</span></div>
+        <div class="sc-val blue">${isNum(n.spilloverPredUsd) ? usd(n.spilloverPredUsd) : "—"}</div>
+        <div class="sc-bar"><i style="width:${spillW}%;background:var(--blue)"></i></div>
+      </div>
+    </div>`;
+
+  drawQuadrantSvg("quadSvg", true);
+
+  const pi = pIdx(), id = S.focus;
+  const holds = [], heldBy = [];
+  for (const e of S.graph.edges) {
+    if (e[0] === id) holds.push({ peer: e[1], w: e[2], p: e[pi] });
+    else if (e[1] === id) heldBy.push({ peer: e[0], w: e[2], p: e[pi] });
+  }
+  holds.sort((a, b) => b.w - a.w); heldBy.sort((a, b) => b.w - a.w);
+  const hop1 = new Set([id, ...heldBy.map(x => x.peer)]);
+  const hop2 = new Map();
+  for (const c of heldBy.slice(0, 5)) for (const e of S.graph.edges) {
+    if (e[1] === c.peer && !hop1.has(e[0])) {
+      const prev = hop2.get(e[0]);
+      if (!prev || e[2] > prev.w) hop2.set(e[0], { peer: e[0], via: c.peer, w: e[2], p: e[pi] });
+    }
+  }
+  drawFlowSvg("uFlowSvg", n, holds.slice(0, 5), heldBy.slice(0, 5), [...hop2.values()].sort((a, b) => b.w - a.w).slice(0, 5), true);
+  $("uEdgeCount").textContent = `上游持仓 ${holds.length} 条 · 下游债权方 ${heldBy.length} 条 · 二跳波及 ${hop2.size} 家`;
+  const rows = [
+    ...holds.map(x => ({ ...x, rel: "上游持仓 (本协议 → 对方)" })),
+    ...heldBy.map(x => ({ ...x, rel: "下游存款 (对方 → 本协议)" }))
+  ].sort((a, b) => b.w - a.w);
+  $("uEdgeBody").innerHTML = rows.slice(0, 60).map(x => {
+    return `<tr onclick="${userPeerClick(x.peer)}">
+      <td><div class="pcell">${avaHtml(x.peer, false)}<b>${esc(gName(x.peer))}</b>${STABLE_DEPEG_IDS.includes(x.peer) ? ' <span class="b b-purple">脱锚</span>' : ""}</div></td>
+      <td class="ps">${x.rel}</td>
+      <td class="mono">${usd(x.w)}</td>
+      <td class="mono">${isNum(x.p) ? pct(x.p * 100, 1) : "—"}</td>
+      <td>${edgeRetainBadge(x.p)}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="5" class="mu">无关联边</td></tr>`;
+}
+
+function userPeerClick(peer) {
+  const n = nodeMap()[peer];
+  if (n && !n.isTokenIssuer) return `setFocus('${esc(peer)}')`;
+  if (STABLE_DEPEG_IDS.includes(peer)) return `showUserView('uStress'); userRunDepeg('${esc(peer)}')`;
+  return "";
+}
+
+function setUserLens(l) {
+  S.uLens = l;
+  document.querySelectorAll("[data-ulens]").forEach(b => b.classList.toggle("active", b.dataset.ulens === l));
+  renderUserList();
+}
+function renderUserList() {
+  const nm = nodeMap(), qq = ($("uListSearch").value || "").toLowerCase();
+  let rows = [];
+  if (S.uLens === "alpha") {
+    const aq = hzH().workbench_case.review.alphaQueue || [];
+    if (aq.length) {
+      rows = aq.map(q => ({
+        ...(nm[String(q.entityId)] || {}), id: String(q.entityId), name: q.targetName,
+        category: q.sourceClass, exposureUsd: q.exposure, _q: q, _isAlpha: true
+      }));
+      $("uLensNote").textContent = `去规模化高危排雷副榜（$15M–$5B 中坚池 · 零 TVL 乘数，按承压率 p̂_stress + 预计净撤出率 + HHI 排序，含交割核验）`;
+    } else {
+      rows = netH().nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer && n.exposureUsd >= 5e6)
+        .sort((a, b) => (b.poolDropPct ?? -1) - (a.poolDropPct ?? -1));
+      $("uLensNote").textContent = `去规模化高危排雷副榜（中坚池净撤出率排序）`;
+    }
+  } else if (S.uLens === "mid") {
+    rows = netH().nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer && n.exposureUsd >= 5e6)
+      .sort((a, b) => (b.poolDropPct ?? -1) - (a.poolDropPct ?? -1));
+    $("uLensNote").textContent = `排除 TVL ≥ $1B 底座，保留敞口 ≥ $5M 协议，按 ${hzShort(S.h)} 占池外流排序（启发式筛选）`;
+  } else if (S.uLens === "m7") {
+    rows = (hzH().workbench_case.review.queue || []).map(q => ({
+      ...(nm[String(q.entityId)] || {}), id: String(q.entityId), name: q.targetName,
+      category: q.sourceClass, exposureUsd: q.exposure, _q: q
+    }));
+    $("uLensNote").textContent = `M7 巨鲸系统主榜（按期望美元敞口净流失额排序 · 适合机构系统性风控）`;
+  } else {
+    rows = netH().nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer && n.exposureUsd >= 5e6 && (n.topCounterpartySharePct || 0) >= 70)
+      .sort((a, b) => b.exposureUsd - a.exposureUsd);
+    $("uLensNote").textContent = `单一对手方敞口占比 ≥ 70% 的中腰部协议（按关联敞口排序）`;
+  }
+  if (qq) rows = rows.filter(r => `${r.name} ${r.category} ${catZh(r.category)} ${r.topCounterpartyName}`.toLowerCase().includes(qq));
+
+  $("uListBody").innerHTML = rows.slice(0, 35).map((r, i) => {
+    const drop = r._q && isNum(r._q.dropPct) ? Math.abs(r._q.dropPct) : (r.poolDropPct || 0);
+    const barW = Math.min(100, Math.max(4, drop * 1.4)).toFixed(0);
+    const pStrTxt = r._isAlpha && r._q && isNum(r._q.pStress) ? ` · 承压 ${pct(r._q.pStress * 100, 0)}` : "";
+    const verd = r._q ? actionBadge(r._q.ticketAction, true) : `<span class="b ${userVerdict(r).cls}">${esc(userVerdict(r).txt)}</span>`;
+    return `<tr class="${r.id === S.focus ? "sel" : ""}" onclick="${nm[r.id] ? `setFocus('${esc(r.id)}')` : ""}">
+      <td class="mono mu">${i + 1}</td>
+      <td><div class="pcell">${avaHtml(r, false)}<div><b>${esc(r.name)}</b><div class="mu" style="font-size:11px">${esc(catZh(r.category))}${pStrTxt}</div></div></div></td>
+      <td class="mono">${usd(r.exposureUsd)}</td>
+      <td class="mono"><span class="bar-track"><span class="bar-fill" style="width:${barW}%"></span></span><span class="${drop >= 10 ? "red" : ""}">${pct(drop, 1)}</span></td>
+      <td><span style="font-size:12px">${esc(r.topCounterpartyName ?? "—")}</span> <span class="mono mu">${pct(r.topCounterpartySharePct, 0)}</span></td>
+      <td>${verd}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="6" class="mu">无匹配项</td></tr>`;
+}
+
+function clearUserPresetActive() {
+  S.uPreset = "";
+  document.querySelectorAll("#uPresetStrip .whatif-btn").forEach(b => b.classList.remove("active"));
+}
+function runUserPreset(key) {
+  S.uPreset = key;
+  document.querySelectorAll("#uPresetStrip .whatif-btn").forEach(b => b.classList.toggle("active", b.dataset.upreset === key));
+  if (key.startsWith("depeg_")) {
+    S.uSimMode = "depeg"; $("uSimShock").value = "20"; $("uSimShockLbl").textContent = "20%";
+    fillUserSimSelect();
+    $("uSimSel").value = key === "depeg_usdc_usdt" ? "D:USDC,USDT" : key === "depeg_usdc" ? "USDC" : "USDE";
+  } else {
+    S.uSimMode = "protocol"; $("uSimShock").value = "50"; $("uSimShockLbl").textContent = "50%";
+    fillUserSimSelect();
+    if (key === "proto_lido" && S.graph.nodes["182"]) $("uSimSel").value = "182";
+    else if (key === "proto_aave" && S.graph.nodes["1599"]) $("uSimSel").value = "1599";
+    else if (key === "proto_alpha3") {
+      const aOpt = ($("uSimSel").innerHTML.match(/value="(A:[^"]+)"/) || [])[1];
+      if (aOpt) $("uSimSel").value = aOpt;
+    } else if (key === "proto_top3") {
+      const qOpt = ($("uSimSel").innerHTML.match(/value="(Q:[^"]+)"/) || [])[1];
+      if (qOpt) $("uSimSel").value = qOpt;
+    }
+  }
+  document.querySelectorAll("#uSimModePills [data-usm]").forEach(b => b.classList.toggle("active", b.dataset.usm === S.uSimMode));
+  runUserSim();
+}
+function userRunDepeg(tokId) {
+  clearUserPresetActive(); S.uSimMode = "depeg";
+  document.querySelectorAll("#uSimModePills [data-usm]").forEach(b => b.classList.toggle("active", b.dataset.usm === "depeg"));
+  $("uSimShock").value = "20"; $("uSimShockLbl").textContent = "20%";
+  fillUserSimSelect(); $("uSimSel").value = String(tokId); runUserSim();
+}
+function userSimulateProtocol(id) {
+  showUserView("uStress"); clearUserPresetActive(); S.uSimMode = "protocol";
+  document.querySelectorAll("#uSimModePills [data-usm]").forEach(b => b.classList.toggle("active", b.dataset.usm === "protocol"));
+  $("uSimShock").value = "50"; $("uSimShockLbl").textContent = "50%";
+  fillUserSimSelect();
+  const validVals = ($("uSimSel").innerHTML.match(/value="([^"]+)"/g) || []).map(m => m.slice(7, -1));
+  if (!validVals.includes(id)) $("uSimSel").insertAdjacentHTML("afterbegin", `<option value="${esc(id)}">${esc(gName(id))}</option>`);
+  $("uSimSel").value = id; runUserSim();
+}
+function setUserSimMode(m) {
+  if (S.uSimMode === m) return;
+  clearUserPresetActive(); S.uSimMode = m;
+  document.querySelectorAll("#uSimModePills [data-usm]").forEach(b => b.classList.toggle("active", b.dataset.usm === m));
+  $("uSimShock").value = m === "depeg" ? "20" : "50";
+  $("uSimShockLbl").textContent = $("uSimShock").value + "%";
+  $("uSimSel").value = ""; fillUserSimSelect(); runUserSim();
+}
+function fillUserSimSelect() {
+  const prev = $("uSimSel").value;
+  if (S.uSimMode === "depeg") {
+    $("uSimShockTitle").textContent = "折价";
+    const presets = [
+      { v: "D:USDC,USDT", label: `USDC + USDT · 持仓 ${usd(tokenCreditorExposure(["USDC", "USDT"]))}` },
+      { v: "USDC", label: `USDC · 持仓 ${usd(tokenCreditorExposure(["USDC"]))}` },
+      { v: "USDT", label: `USDT · 持仓 ${usd(tokenCreditorExposure(["USDT"]))}` },
+      { v: "USDE", label: `USDe · 持仓 ${usd(tokenCreditorExposure(["USDE"]))}` },
+      { v: "PYUSD", label: `PYUSD · 持仓 ${usd(tokenCreditorExposure(["PYUSD"]))}` },
+      { v: "D:USDC,USDT,USDE,PYUSD", label: `四大稳定币联合 · 持仓 ${usd(tokenCreditorExposure(["USDC", "USDT", "USDE", "PYUSD"]))}` }
+    ];
+    $("uSimSel").innerHTML = presets.map(p => `<option value="${esc(p.v)}">${esc(p.label)}</option>`).join("");
+  } else {
+    $("uSimShockTitle").textContent = "冲击";
+    const cand = netH().nodes.filter(n => !n.isTokenIssuer && isNum(n.spilloverPredUsd)).sort((a, b) => b.spilloverPredUsd - a.spilloverPredUsd);
+    const q = (hzH().workbench_case.review.queue || []).map(x => String(x.entityId)).filter(id => (S.graph.nodes[id] || {}).tvlUsd > 0).slice(0, 3);
+    const aq = (hzH().workbench_case.review.alphaQueue || []).map(x => String(x.entityId)).filter(id => (S.graph.nodes[id] || {}).tvlUsd > 0).slice(0, 3);
+    let html = q.length ? `<option value="Q:${q.join(",")}">巨鲸主榜 Top-${q.length} (${q.map(gName).map(esc).join(" + ")})</option>` : "";
+    if (aq.length) html += `<option value="A:${aq.join(",")}">Alpha 排雷副榜 Top-${aq.length} (${aq.map(gName).map(esc).join(" + ")})</option>`;
+    html += `<optgroup label="单协议 (按外溢排序)">${cand.map(n => `<option value="${esc(n.id)}">${esc(n.name)} · 外溢 ${usd(n.spilloverPredUsd)}</option>`).join("")}</optgroup>`;
+    $("uSimSel").innerHTML = html;
+  }
+  const validVals = ($("uSimSel").innerHTML.match(/value="([^"]+)"/g) || []).map(m => m.slice(7, -1));
+  $("uSimSel").value = (prev && validVals.includes(prev)) ? prev : (validVals[0] || "");
+}
+function runUserSim() {
+  const v = $("uSimSel").value; if (!v) return;
+  const shocked = (v.startsWith("Q:") || v.startsWith("A:") || v.startsWith("D:")) ? v.slice(2).split(",") : [v];
+  const f = Number($("uSimShock").value) / 100;
+  const obs = simulateContagionTraced(simSnap(false), shocked, { shockFraction: f, shockMode: S.uSimMode });
+  const pred = simulateContagionTraced(simSnap(true), shocked, { shockFraction: f, shockMode: S.uSimMode });
+  S.uSimLast = { obs, pred, shocked, f };
+  const names = shocked.map(gName).join(" + ");
+  const distressedCnt = S.uSimMode === "depeg" ? pred.affected_count : Math.max(0, pred.affected_count - pred.shocked_nodes.length);
+
+  $("uSimSummary").textContent = `${names} (-${Math.round(f * 100)}%) · 连续比例留存预测图 (${hzShort(S.h)})`;
+  $("uSimKpis").innerHTML = S.uSimMode === "depeg"
+    ? `<div class="kpi"><div class="kt">R1 直接持仓减值</div><div class="kv red">${usd(pred.direct_loss)}</div><div class="ks">观测图 ${usd(obs.direct_loss)}</div></div>
+       <div class="kpi"><div class="kt">R2+ 二阶连锁传染</div><div class="kv amber">${usd(pred.contagion_loss)}</div><div class="ks">观测图 ${usd(obs.contagion_loss)}</div></div>
+       <div class="kpi"><div class="kt">协议总损失 (R1+R2+)</div><div class="kv">${usd(pred.total_loss)}</div><div class="ks">波及 ${pred.per_node.length} 家协议</div></div>
+       <div class="kpi"><div class="kt">重伤协议 (&gt;10% TVL)</div><div class="kv blue">${distressedCnt} 家</div><div class="ks">传导 ${pred.max_loss_round} 轮</div></div>`
+    : `<div class="kpi"><div class="kt">冲击源直接损失</div><div class="kv">${usd(pred.direct_loss)}</div><div class="ks">${esc(names)}</div></div>
+       <div class="kpi"><div class="kt">下游传染损失 (预测图)</div><div class="kv red">${usd(pred.contagion_loss)}</div><div class="ks">观测图 ${usd(obs.contagion_loss)}</div></div>
+       <div class="kpi"><div class="kt">受波及下游协议</div><div class="kv amber">${pred.per_node.length} 家</div><div class="ks">传导 ${pred.propagation_rounds} 轮</div></div>
+       <div class="kpi"><div class="kt">重伤协议 (&gt;10% TVL)</div><div class="kv blue">${distressedCnt} 家</div><div class="ks">超过 10% 锁仓警戒线</div></div>`;
+
+  drawCascadeSvg("uSimCascSvg", pred, true);
+  renderUserSimTable();
+}
+function renderUserSimTable() {
+  if (!S.uSimLast) return;
+  const { pred } = S.uSimLast, nm = nodeMap();
+  const q = ($("uSimFilter").value || "").trim().toLowerCase();
+  const list = q ? pred.per_node.filter(r => gName(r.id).toLowerCase().includes(q)) : pred.per_node.slice(0, 50);
+  $("uSimBody").innerHTML = list.map(r => `<tr onclick="${nm[r.id] ? `showUserView('uHome'); setFocus('${esc(r.id)}')` : ""}">
+      <td><span class="b ${r.round === 1 ? "b-red" : "b-amber"}">R${r.round}</span></td>
+      <td><div class="pcell">${avaHtml(r.id, false)}<b>${esc(gName(r.id))}</b></div></td>
+      <td class="ps">${esc(gName(r.via))}</td>
+      <td class="mono red">${usd(r.lossUsd)}</td>
+      <td class="mono">${pct(r.lossPctOfTvl, 1)}</td>
+      <td>${r.distressed ? '<span class="b b-red">重伤</span>' : '<span class="b b-mu">波及</span>'}</td>
+    </tr>`).join("") || `<tr><td colspan="6" class="mu">当前条件下无受波及记录</td></tr>`;
+}
+
+function renderUserGuide() {
+  const h = netH(), warnPct = hzDropWarnPct(S.h);
+  $("uGuideHzLbl").textContent = hzShort(S.h);
+  if ($("uGuideTitle1")) $("uGuideTitle1").textContent = `高净撤出预警 (≥${warnPct}%)`;
+  const mid = h.nodes.filter(n => !n.isBaseHub && !n.isTokenIssuer && n.exposureUsd >= 5e6);
+  const col1 = [...mid].filter(n => (n.poolDropPct || 0) >= warnPct).sort((a, b) => (b.poolDropPct || 0) - (a.poolDropPct || 0)).slice(0, 9);
+  const col2 = [...mid].filter(n => (n.topCounterpartySharePct || 0) >= 75).sort((a, b) => b.exposureUsd - a.exposureUsd).slice(0, 9);
+  const col3 = h.nodes.filter(n => n.isBaseHub && !n.isTokenIssuer).sort((a, b) => b.exposureUsd - a.exposureUsd).slice(0, 9);
+
+  const rowHtml = (n, badgeCls, metricTxt, subTxt) => `
+    <div class="guide-row" onclick="showUserView('uHome'); setFocus('${esc(n.id)}')">
+      <div class="pcell" style="min-width:0">
+        ${avaHtml(n, false)}
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:13px">${esc(n.name)} <span class="mu" style="font-weight:400;font-size:11px">· ${esc(catZh(n.category))}</span></div>
+          <div class="ps" style="font-size:11px">${subTxt}</div>
+        </div>
+      </div>
+      <span class="b ${badgeCls} mono">${metricTxt}</span>
+    </div>`;
+
+  $("uGuideCol1").innerHTML = col1.map(n => rowHtml(n, "b-red", `-${pct(n.poolDropPct, 1)}`, `敞口 ${usd(n.exposureUsd)} · 预期收缩 ${usd(n.expectedLossUsd)}`)).join("") || '<div class="mu">无记录</div>';
+  $("uGuideCol2").innerHTML = col2.map(n => rowHtml(n, "b-amber", `${pct(n.topCounterpartySharePct, 0)}`, `依赖 ${esc(n.topCounterpartyName ?? "—")} · 敞口 ${usd(n.exposureUsd)}`)).join("") || '<div class="mu">无记录</div>';
+  $("uGuideCol3").innerHTML = col3.map(n => rowHtml(n, "b-blue", usd(n.totalTvlUsd), `敞口 ${usd(n.exposureUsd)} · 占池 -${pct(n.poolDropPct, 2)}`)).join("");
+}
+
+function setWfBoard(board) {
+  S.wfBoard = board === "alpha" ? "alpha" : "whale";
+  document.querySelectorAll("[data-wfboard]").forEach(b => b.classList.toggle("active", b.dataset.wfboard === S.wfBoard));
+  fillUserWfSelect();
+  fillWfSelect();
+  renderUserTrack();
+  renderWf();
+}
+function setTrackAmp(mode) {
+  S.trkAmp = mode;
+  document.querySelectorAll("[data-utrk]").forEach(b => b.classList.toggle("active", b.dataset.utrk === mode));
+  renderUserTrack();
+  renderWf();
+}
+function fillUserWfSelect() {
+  const resList = resolved();
+  $("uWfSel").innerHTML = `<option value="ALL">全部已交割 (${resList.length} 期)</option>` + resList.map(s => {
+    const hTxt = S.wfBoard === "alpha" && isNum(s.alphaHits) ? `${s.alphaHits}/${s.alphaTotal} 命中` : `${s.backtestHits}/${s.backtestTotal} 命中`;
+    return `<option value="${esc(s.snapshotId)}">${esc(s.date)} → ${esc(s.realizedDate)} (${s.horizonWeeks}W · ${hTxt})</option>`;
+  }).join("");
+}
+function selectUserWindow(snapId) {
+  if ($("uWfSel")) $("uWfSel").value = snapId;
+  renderUserTrack();
+}
+function renderUserTrack() {
+  const wf = S.hist.liveWalkForwardSummary || {}, awf = S.hist.alphaWalkForwardSummary || {}, p = S.hist.paperBacktest29Weeks || {};
+  const hasAlphaWf = (awf.alphaTotal || 0) > 0;
+  const m7Lift = isNum(wf.m7StressedPrecisionPct) && isNum(wf.m2StressedPrecisionPct) && wf.m2StressedPrecisionPct > 0
+    ? (wf.m7StressedPrecisionPct / wf.m2StressedPrecisionPct) : null;
+  const lossLift = isNum(wf.m7CapturedLossUsd) && isNum(wf.m2CapturedLossUsd) && wf.m2CapturedLossUsd > 0
+    ? (wf.m7CapturedLossUsd / wf.m2CapturedLossUsd) : null;
+  const p29Lift = isNum(p.m7TicketPrecision) && isNum(p.m2TicketPrecision) && p.m2TicketPrecision > 0
+    ? (p.m7TicketPrecision / p.m2TicketPrecision) : null;
+  const resList = resolved();
+  const n1w = resList.filter(s => s.horizonWeeks === 1).length, n4w = resList.filter(s => s.horizonWeeks >= 4).length;
+  const hzMixTxt = n1w && n4w ? `含 ${n1w} 期 1W 哨兵 + ${n4w} 期 4W 交割` : `${resList.length} 期滚动交割`;
+
+  $("uTrackKpis").innerHTML = `
+    <div class="kpi click ${S.wfBoard === "whale" ? "active-card" : ""}" onclick="setWfBoard('whale')">
+      <div class="kt">系统性大盘榜精确率 (敞口加权)</div>
+      <div class="kpi-hero">
+        <div class="kv green">${pct(wf.m7StressedPrecisionPct)}</div>
+        ${m7Lift ? `<span class="b b-green mono">✓ ${num(m7Lift, 2)}x 静态基线</span>` : ""}
+      </div>
+      <div class="kpi-cmp">
+        <div class="kpi-bar-row"><span>本模型</span><span class="kpi-bar-bg"><i class="kpi-bar-fill" style="width:${Math.min(100, wf.m7StressedPrecisionPct || 0)}%"></i></span><span>${pct(wf.m7StressedPrecisionPct)}</span></div>
+        <div class="kpi-bar-row muted"><span>规模基线</span><span class="kpi-bar-bg"><i class="kpi-bar-fill base" style="width:${Math.min(100, wf.m2StressedPrecisionPct || 0)}%"></i></span><span>${pct(wf.m2StressedPrecisionPct)}</span></div>
+      </div>
+      <div class="ks">${wf.m7StressedHits}/${wf.m7StressedTotal} 进全网流失额前5% · 全网盲筛仅 5.0%</div>
+    </div>
+    <div class="kpi click ${S.wfBoard === "alpha" ? "active-card" : ""}" onclick="setWfBoard('alpha')">
+      <div class="kt">高危异动排雷命中率 (去规模偏置)</div>
+      <div class="kpi-hero">
+        <div class="kv ${hasAlphaWf ? "green" : "mu"}">${hasAlphaWf ? pct(awf.alphaPrecisionPct) : "—"}</div>
+        ${hasAlphaWf && isNum(awf.alphaLiftVsBaseRate) ? `<span class="b b-green mono">✓ ${num(awf.alphaLiftVsBaseRate, 2)}x 同池基准</span>` : ""}
+      </div>
+      ${hasAlphaWf ? `<div class="kpi-cmp">
+        <div class="kpi-bar-row"><span>排雷榜</span><span class="kpi-bar-bg"><i class="kpi-bar-fill" style="width:${Math.min(100, awf.alphaPrecisionPct || 0)}%"></i></span><span>${pct(awf.alphaPrecisionPct)}</span></div>
+        <div class="kpi-bar-row muted"><span>同池自然</span><span class="kpi-bar-bg"><i class="kpi-bar-fill base" style="width:${Math.min(100, awf.alphaUniverseMeanBaseRatePct || 0)}%"></i></span><span>${pct(awf.alphaUniverseMeanBaseRatePct)}</span></div>
+      </div>` : ""}
+      <div class="ks">${hasAlphaWf ? `${awf.alphaHits}/${awf.alphaTotal} 命中高危撤出 · 零 TVL 权重筛中腰部` : "中坚池零规模加权排雷"}</div>
+    </div>
+    <div class="kpi">
+      <div class="kt">${S.wfBoard === "alpha" && hasAlphaWf ? "排雷榜捕获真实净流失" : "大盘榜捕获真实净流失"}</div>
+      <div class="kpi-hero">
+        <div class="kv">${usd(S.wfBoard === "alpha" && hasAlphaWf ? awf.alphaCapturedLossUsd : wf.m7CapturedLossUsd)}</div>
+        ${S.wfBoard === "alpha" && hasAlphaWf
+          ? `<span class="b b-blue mono">方向胜率 ${pct(awf.alphaDirectionPrecisionPct)}</span>`
+          : (lossLift ? `<span class="b b-green mono">✓ ${num(lossLift, 2)}x 基线捕获</span>` : "")}
+      </div>
+      ${S.wfBoard === "alpha" && hasAlphaWf ? `<div class="kpi-cmp">
+        <div class="kpi-bar-row"><span>净流出向</span><span class="kpi-bar-bg"><i class="kpi-bar-fill blue" style="width:${Math.min(100, awf.alphaDirectionPrecisionPct || 0)}%"></i></span><span>${pct(awf.alphaDirectionPrecisionPct)}</span></div>
+        <div class="kpi-bar-row muted"><span>随机期望</span><span class="kpi-bar-bg"><i class="kpi-bar-fill base" style="width:${Math.min(100, awf.alphaUniverseMeanBaseRatePct || 0)}%"></i></span><span>${num(awf.alphaExpectedRandomHits, 1)}单</span></div>
+      </div>` : `<div class="kpi-cmp">
+        <div class="kpi-bar-row"><span>本模型</span><span class="kpi-bar-bg"><i class="kpi-bar-fill" style="width:100%"></i></span><span>${usd(wf.m7CapturedLossUsd)}</span></div>
+        <div class="kpi-bar-row muted"><span>规模基线</span><span class="kpi-bar-bg"><i class="kpi-bar-fill base" style="width:${Math.min(100, Math.round(100 * (wf.m2CapturedLossUsd || 0) / Math.max(1, wf.m7CapturedLossUsd || 1)))}%"></i></span><span>${usd(wf.m2CapturedLossUsd)}</span></div>
+      </div>`}
+      <div class="ks">${S.wfBoard === "alpha" && hasAlphaWf ? `$15M–$5B 中腰部协议池 · ${hzMixTxt}` : `静态规模基线仅捕获 ${usd(wf.m2CapturedLossUsd)} · ${hzMixTxt}`}</div>
+    </div>
+    <div class="kpi">
+      <div class="kt">4W 月度结构交割精确率 (${p.nWeeks || 29}周样本外)</div>
+      <div class="kpi-hero">
+        <div class="kv blue">${frac(p.m7TicketPrecision)}</div>
+        ${p29Lift ? `<span class="b b-blue mono">✓ ${num(p29Lift, 2)}x 静态基线</span>` : ""}
+      </div>
+      <div class="kpi-cmp">
+        <div class="kpi-bar-row"><span>4W 模型</span><span class="kpi-bar-bg"><i class="kpi-bar-fill blue" style="width:${Math.min(100, 100 * (p.m7TicketPrecision || 0))}%"></i></span><span>${frac(p.m7TicketPrecision)}</span></div>
+        <div class="kpi-bar-row muted"><span>静态基线</span><span class="kpi-bar-bg"><i class="kpi-bar-fill base" style="width:${Math.min(100, 100 * (p.m2TicketPrecision || 0))}%"></i></span><span>${frac(p.m2TicketPrecision)}</span></div>
+      </div>
+      <div class="ks">4W 趋势兑现高于 1W 短期波动 · 误干预 ${frac(p.m6FalseInterventionRate)} → ${frac(p.m7FalseInterventionRate)}</div>
+    </div>`;
+
+  const sel = $("uWfSel").value || "ALL", nm = nodeMap();
+  if ($("uWfStrip")) {
+    const allHitTxt = S.wfBoard === "alpha" && hasAlphaWf
+      ? `${awf.alphaHits}/${awf.alphaTotal} (${pct(awf.alphaPrecisionPct)})`
+      : `${wf.m7StressedHits}/${wf.m7StressedTotal} (${pct(wf.m7StressedPrecisionPct)})`;
+    const allLossTxt = usd(S.wfBoard === "alpha" && hasAlphaWf ? awf.alphaCapturedLossUsd : wf.m7CapturedLossUsd);
+    $("uWfStrip").innerHTML = `<button type="button" class="wf-pill ${sel === "ALL" ? "active" : ""}" onclick="selectUserWindow('ALL')">
+        <div class="wf-pill-top"><span>全部已交割 (${resList.length} 期)</span><span class="b b-blue">汇总</span></div>
+        <div class="wf-pill-sub"><span>命中 ${allHitTxt}</span><span>${allLossTxt}</span></div>
+      </button>` + resList.map(s => {
+        const isA = S.wfBoard === "alpha" && isNum(s.alphaHits);
+        const hCnt = isA ? s.alphaHits : s.backtestHits, hTot = isA ? s.alphaTotal : s.backtestTotal;
+        const hPct = isA ? s.alphaHitRatePct : s.backtestHitRatePct;
+        const capUsd = isA ? s.alphaCapturedLossUsd : s.m7CapturedLossUsd;
+        const hzBadge = s.horizonWeeks >= 4
+          ? `<span class="b b-purple">${s.horizonWeeks}W 结构</span>`
+          : `<span class="b b-mu">${s.horizonWeeks}W 哨兵</span>`;
+        return `<button type="button" class="wf-pill ${sel === s.snapshotId ? "active" : ""}" onclick="selectUserWindow('${esc(s.snapshotId)}')">
+          <div class="wf-pill-top"><span class="mono">${esc(s.date.slice(5))} → ${esc((s.realizedDate || "").slice(5))}</span>${hzBadge}</div>
+          <div class="wf-pill-sub"><span class="${(hPct || 0) >= 50 ? "green" : ""}">${hCnt}/${hTot} (${pct(hPct, 0)})</span><span>${usd(capUsd || 0)}</span></div>
+        </button>`;
+      }).join("");
+  }
+
+  if ($("uWfRubric")) {
+    $("uWfRubric").innerHTML = S.wfBoard === "alpha"
+      ? `<span><b>高危异动排雷榜核验口径：</b>限定 $15M–$5B 中腰部协议且<b>零 TVL 规模权重</b>，纯按预期净撤出率排雷；到期锁价净流出达阈值（1W ≥3% / 4W ≥8%）或进全网流失额前 5% 即判定命中。</span><span class="mono mu">已剥离 ETH/BTC 现货涨跌</span>`
+      : `<span><b>系统性大盘榜核验口径：</b>按「受险敞口 × 预期撤出」监控大型流动性底座（故 AAVE/Lido 常驻前排观察）；到期进入全网约 ${netH().fullNodes} 个协议中<b>「绝对美元净流失额前 5%（约前 65 名）」</b>即判定命中。</span><span class="mono mu">风险排序非点位算命 · 聚焦外流捕获</span>`;
+  }
+
+  const windowBlocks = [];
+  let maxLoss = 1;
+  for (const s of resList) {
+    if (sel !== "ALL" && s.snapshotId !== sel) continue;
+    const srcList = S.wfBoard === "alpha" ? (s.alphaRankings || []) : (s.rankings || []);
+    const items = srcList.filter(r => {
+      if (S.wfBoard === "alpha" ? !r.inAlphaQueue : !r.inSupervisoryQueue) return false;
+      if (S.trkAmp === "high" && Math.abs(r.dropPct || 0) < 10) return false;
+      return true;
+    });
+    if (!items.length) continue;
+    for (const r of items) if ((r.realizedLossUsd || 0) > maxLoss) maxLoss = r.realizedLossUsd;
+    windowBlocks.push({ s, items });
+  }
+
+  const rows = [];
+  for (const { s, items } of windowBlocks) {
+    const isA = S.wfBoard === "alpha" && isNum(s.alphaHits);
+    const ethBeta = s.benchmarkReturns && isNum(s.benchmarkReturns.ethReturnPct)
+      ? `<span class="mu" style="font-size:11px">· 同期 ETH ${s.benchmarkReturns.ethReturnPct > 0 ? "+" : ""}${pct(s.benchmarkReturns.ethReturnPct, 1)} 币价波动已剔除</span>` : "";
+    const hzTag = s.horizonWeeks >= 4
+      ? `<span class="b b-purple">${s.horizonWeeks}W 月度结构交割</span>`
+      : `<span class="b b-blue">${s.horizonWeeks}W 周度高频哨兵</span>`;
+    const grpRight = isA
+      ? `<span>本期命中 <b class="green mono">${s.alphaHits}/${s.alphaTotal} (${pct(s.alphaHitRatePct, 1)})</b> <span class="mu">vs 同池自然发生率 ${pct(s.alphaBaseRatePct, 1)}</span> · 捕获净外流 <b class="mono">${usd(s.alphaCapturedLossUsd)}</b></span>`
+      : `<span>本期命中 <b class="green mono">${s.backtestHits}/${s.backtestTotal} (${pct(s.backtestHitRatePct, 1)})</b> <span class="mu">vs 静态规模基线 ${s.m2StressedHits}/${s.m2StressedTotal}</span> · 捕获净外流 <b class="mono">${usd(s.m7CapturedLossUsd)}</b></span>`;
+    rows.push(`<tr class="wf-grp"><td colspan="7"><div class="wf-grp-bar"><div class="ctl"><b class="mono">${esc(s.date)} → ${esc(s.realizedDate)}</b> ${hzTag} ${ethBeta}</div>${grpRight}</div></td></tr>`);
+
+    for (const r of items) {
+      const realVal = S.wfBoard === "alpha" && isNum(r.tvlNetChangePct) ? Math.min(r.actualChangePct || 0, r.tvlNetChangePct) : r.actualChangePct;
+      const rv = realVal || 0;
+      const realTxt = rv < -0.05 ? `↓ ${pct(rv, 1)}` : rv > 0.05 ? `↑ +${pct(rv, 1)}` : pct(rv, 1);
+      const realCls = rv < -0.05 ? "red" : "mu";
+      const hubTag = S.wfBoard === "whale" && (r.exposure || 0) >= 1e10
+        ? `<span class="b b-blue" style="font-size:10px;padding:1px 6px" title="百亿级系统重要性资金底座，常驻风险敞口监控">系统底座</span>` : "";
+      const lossUsd = r.realizedLossUsd || 0;
+      const wPct = lossUsd > 0 ? Math.max(7, Math.min(100, Math.round(100 * Math.sqrt(lossUsd / maxLoss)))) : 0;
+      const lossCell = lossUsd > 0
+        ? `<div class="loss-cell"><span class="loss-track"><i class="loss-fill ${r.backtestHit ? "hit" : ""}" style="width:${wPct}%"></i></span><b class="mono">${usd(lossUsd)}</b></div>`
+        : `<span class="mu" style="font-size:11.5px">${rv >= 0 ? "净流入 · 无流失" : "微幅波动"}</span>`;
+      const hitBadge = S.wfBoard === "alpha"
+        ? (r.backtestHit === true
+          ? '<span class="b b-green">✓ 命中高危撤出</span>'
+          : (rv < 0 ? '<span class="b b-amber">↘ 方向命中 · 轻度流出</span>' : `<span class="b b-mu">· 期内净流入 (基准 ${pct(s.alphaBaseRatePct, 0)})</span>`))
+        : (r.backtestHit === true
+          ? '<span class="b b-green" title="进入全网约1,340个活跃协议中绝对美元净流失额前5%（约前65名）">✓ 全网流失额前5%</span>'
+          : (rv < 0 ? '<span class="b b-amber" title="实际发生净赎回流出，但绝对金额未排进全网前5%">↘ 净流出 (未进前5%)</span>' : '<span class="b b-mu">· 期内净流入</span>'));
+      rows.push(`<tr onclick="${nm[r.entityId] ? `showUserView('uHome'); setFocus('${esc(r.entityId)}')` : ""}">
+        <td class="mono mu" data-lbl="排名">${r.rank}</td>
+        <td data-lbl="协议与赛道"><div class="pcell">${avaHtml(r.entityId, false)}<b>${esc(r.targetName)}</b> <span class="mu" style="font-size:11px">${esc(catZh(r.category))}</span> ${hubTag}</div></td>
+        <td class="mono" data-lbl="发布时受险敞口">${usd(r.exposure)}</td>
+        <td data-lbl="预警等级 · 预期压力">${actionBadge(r.ticketAction, true)} <span class="mono mu" style="margin-left:4px">预期 ${pct(r.dropPct, 1)}</span></td>
+        <td class="mono ${realCls}" data-lbl="到期真实净流向">${realTxt}</td>
+        <td data-lbl="捕获真实净流失额">${lossCell}</td>
+        <td data-lbl="交割核验">${hitBadge}</td>
+      </tr>`);
+    }
+  }
+  $("uTrackBody").innerHTML = rows.join("") || `<tr><td colspan="7" class="mu">当前筛选条件下无记录</td></tr>`;
+
+  const R = S.hist.historicalCrisisReplays || {};
+  const crisisHtml = (rep, title) => !rep ? "" : `
+    <div class="panel">
+      <div class="ph"><div class="pt">${esc(title)} · ${esc(rep.date)} → ${esc(rep.futureDate)} (${rep.horizonWeeks}W 结构交割)</div><span class="b b-green mono">✓ 精确率 ${frac(rep.precisionM7)}</span></div>
+      <div class="pb flush tbl-scroll-sm" style="border:none;border-radius:0">
+        <table><thead><tr><th>#</th><th>预警协议</th><th>发布时敞口</th><th>门控动作</th><th>危机核验</th><th>到期真实损失</th></tr></thead>
+        <tbody>${(rep.tickets || []).map(t => `<tr><td class="mono mu">${t.rank}</td><td><b>${esc(t.targetName)}</b></td><td class="mono">${usd(t.exposureUsd)}</td><td>${actionBadge(t.ticketAction, true)}</td><td>${t.inStressed ? '<span class="b b-green">✓ 命中重度受损</span>' : '<span class="b b-mu">· 未触发</span>'}</td><td class="mono">${usd(t.actualLossUsd)}</td></tr>`).join("")}</tbody></table>
+      </div>
+    </div>`;
+  $("uCrisisCards").innerHTML = crisisHtml(R.terra, "2022 Terra 崩盘前瞻回放") + crisisHtml(R.ftx, "2022 FTX 挤兑前瞻回放");
+}
+
+// =========================================================================
+// MODE 2: 专业工作台 (Pro Institutional Workbench)
+// =========================================================================
+function renderKpis() {
+  const g = S.graph, h = netH(), z = hzH();
+  const totW = g.edges.reduce((a, e) => a + (e[2] || 0), 0);
+  $("kSnap").textContent = g.snapshotDate;
+  $("kSnapSub").textContent = `${h.fullNodes} 节点 · ${h.fullEdges} 条边 · 边权合计 ${usd(totW)}`;
+  const q = z.workbench_case.review.queue || [], aq = z.workbench_case.review.alphaQueue || [];
+  const strong = q.filter(x => x.ticketAction === "Recommend-Reduce" || x.ticketAction === "Contingency").length;
+  const aStrong = aq.filter(x => x.ticketAction === "Recommend-Reduce" || x.ticketAction === "Contingency").length;
+  $("kQueue").textContent = `主 ${q.length} + 副 ${aq.length} 张`;
+  $("kQueueSub").textContent = `减仓建议 主榜 ${strong} / Alpha副榜 ${aStrong} · 至 ${z.forecast_date}`;
+  $("kEdges").textContent = `${h.droppedEdges} / ${h.fullEdges}`;
+  const nAl = z.n_alerts;
+  const gateTxt = nAl === 0
+    ? "置信门：无告警触发"
+    : `平均置信度 ${frac(z.mean_alert_confidence)} · 置信门：${z.confidence_gate_passed === true ? "通过" : z.confidence_gate_passed === false ? "冻结" : "—"}`;
+  const partCnt = isNum(h.partialWithdrawEdges) ? `部分赎回 ${h.partialWithdrawEdges} 条 · ` : "";
+  $("kEdgesSub").textContent = `${partCnt}告警 ${nAl ?? "—"} 条 · ${gateTxt}`;
+  const wf = S.hist.liveWalkForwardSummary || {}, awf = S.hist.alphaWalkForwardSummary || {};
+  $("kWf").textContent = `${wf.m7StressedHits}/${wf.m7StressedTotal} vs ${wf.m2StressedHits}/${wf.m2StressedTotal}`;
+  const alphaSub = (awf.alphaTotal || 0) > 0
+    ? ` · Alpha副榜 ${pct(awf.alphaPrecisionPct)}${isNum(awf.alphaLiftVsBaseRate) ? ` (${num(awf.alphaLiftVsBaseRate, 2)}x)` : ""}`
+    : ` · ${wf.nResolvedWindows} 个窗口`;
+  $("kWfSub").textContent = `${pct(wf.m7StressedPrecisionPct)} vs ${pct(wf.m2StressedPrecisionPct)}${alphaSub}`;
+  const p = S.hist.paperBacktest29Weeks || {}, v4h = (S.hist.v4Holdout33Weeks || {}).horizons || {};
+  if (v4h.h4 && v4h.h4.node_stress_10pct) {
+    $("k29").textContent = `AUROC ${num(v4h.h4.node_stress_10pct.auroc, 3)}`;
+    $("k29Sub").textContent = `FM-v4 33周净流量 · Alpha 4W ${frac(v4h.h4.walk_forward_alpha_top7_hit_rate)} (论文原USD ${frac(p.m7TicketPrecision)})`;
+  } else {
+    $("k29").textContent = `${frac(p.m7TicketPrecision)} vs ${frac(p.m2TicketPrecision)}`;
+    $("k29Sub").textContent = `论文原USD口径 M7 vs M2 · 误干预 ${frac(p.m6FalseInterventionRate)} → ${frac(p.m7FalseInterventionRate)}`;
+  }
+}
+
+function fillFocusSelect() {
+  const nodes = netH().nodes.filter(n => !n.isTokenIssuer);
+  const mid = nodes.filter(n => !n.isBaseHub).sort((a, b) => (b.poolDropPct ?? -1) - (a.poolDropPct ?? -1));
+  const hub = nodes.filter(n => n.isBaseHub).sort((a, b) => b.exposureUsd - a.exposureUsd);
+  const opt = n => `<option value="${esc(n.id)}">${esc(n.name)} · ${esc(n.category)} · ${pct(n.poolDropPct)}</option>`;
+  $("focusSel").innerHTML = `<optgroup label="中腰部 (TVL < $1B)">${mid.map(opt).join("")}</optgroup><optgroup label="底座枢纽 (TVL ≥ $1B)">${hub.map(opt).join("")}</optgroup>`;
+  if (!nodeMap()[S.focus]) S.focus = (mid[0] || hub[0]).id;
+  $("focusSel").value = S.focus;
+}
+function setFocus(id) {
+  id = String(id);
+  const nm = nodeMap(), n = nm[id];
+  if (n && n.isTokenIssuer) {
+    S.t3Spot = id;
+    if (S.three) update3dSpotlight();
+    return;
+  }
+  S.focus = id; S.t3Spot = id;
+  if ($("focusSel")) $("focusSel").value = S.focus;
+  if ($("uFocusSel")) $("uFocusSel").value = S.focus;
+  renderFocus(); renderRanking();
+  renderUserQuickChips(); renderUserFocus(); renderUserList();
+  if (S.three) update3dSpotlight();
+}
+function setLeftMode(m) {
+  S.left = m;
+  $("mDag").classList.toggle("active", m === "dag");
+  $("mQuad").classList.toggle("active", m === "quad");
+  $("m3d").classList.toggle("active", m === "3d");
+  $("dagWrap").style.display = m === "dag" ? "flex" : "none";
+  $("proQuadWrap").style.display = m === "quad" ? "flex" : "none";
+  $("proThreeHost").style.display = m === "3d" ? "flex" : "none";
+  syncThreeHost();
+  if (m === "quad") drawQuadrantSvg("proQuadSvg", false);
+  else if (m === "3d") build3d();
+}
+function peerClickAttr(peer) {
+  const n = nodeMap()[peer];
+  if (n && !n.isTokenIssuer) return `setFocus('${esc(peer)}')`;
+  if (STABLE_DEPEG_IDS.includes(peer)) return `simulateTokenDepeg('${esc(peer)}')`;
+  return "";
+}
+function pIdx() { return 3 + S.graph.horizons.map(String).indexOf(S.h); }
+
+function renderFocus() {
+  const n = nodeMap()[S.focus]; if (!n) return;
+  $("focusCat").textContent = n.category || "—";
+  const m7Part = n.m7InQueue ? `M7 #${n.m7Rank} ${actionBadge(n.m7TicketAction)}${n.m7Demoted ? ` <span class="b b-green">由 ${esc(actionZh(n.m7RawAction))} 降级</span>` : ""}` : "";
+  const alphaPart = n.alphaInQueue ? ` <span class="b b-red">Alpha 副榜 #${n.alphaRank}</span>` : "";
+  $("focusM7").outerHTML = `<span id="focusM7">${(m7Part || alphaPart) ? `${m7Part}${alphaPart}` : '<span class="b b-mu">不在队列</span>'}</span>`;
+  $("fExp").textContent = `${usd(n.exposureUsd)} / ${usd(n.totalTvlUsd)}`;
+  const pStrPart = isNum(n.pStress) ? ` · p̂_str ${pct(n.pStress * 100, 1)}` : "";
+  $("fDrop").textContent = `${pct(n.poolDropPct, 2)} / ${pct(n.flowDropPct, 1)}${pStrPart}`;
+  $("fHhi").textContent = `${num(n.hhi)} · ${n.topCounterpartyName ?? "—"} ${pct(n.topCounterpartySharePct, 0)}`;
+  $("fSpill").textContent = isNum(n.spilloverPredUsd) ? `${usd(n.spilloverPredUsd)} · 受困 ${n.spilloverPredDistressed}` : "—";
+
+  const pi = pIdx(), id = S.focus;
+  const holds = [], heldBy = [];
+  for (const e of S.graph.edges) {
+    if (e[0] === id) holds.push({ peer: e[1], w: e[2], p: e[pi] });
+    else if (e[1] === id) heldBy.push({ peer: e[0], w: e[2], p: e[pi] });
+  }
+  holds.sort((a, b) => b.w - a.w); heldBy.sort((a, b) => b.w - a.w);
+  const hop1 = new Set([id, ...heldBy.map(x => x.peer)]);
+  const hop2 = new Map();
+  const topCred = heldBy.slice(0, 5);
+  for (const c of topCred) for (const e of S.graph.edges) {
+    if (e[1] === c.peer && !hop1.has(e[0])) { const prev = hop2.get(e[0]); if (!prev || e[2] > prev.w) hop2.set(e[0], { peer: e[0], via: c.peer, w: e[2], p: e[pi] }); }
+  }
+  drawFlowSvg("dagSvg", n, holds.slice(0, 5), topCred, [...hop2.values()].sort((a, b) => b.w - a.w).slice(0, 5), false);
+  drawQuadrantSvg("proQuadSvg", false);
+  $("edgeCount").textContent = `持有资产 ${holds.length} 条 · 被持有 ${heldBy.length} 条 · 二跳债权方 ${hop2.size} 个`;
+  const rows = [...heldBy.map(x => ({ ...x, rel: "持有本协议资产 (债权方)" })), ...holds.map(x => ({ ...x, rel: "本协议持有其资产 (债务方)" }))].sort((a, b) => b.w - a.w);
+  $("edgeBody").innerHTML = rows.slice(0, 80).map(x => `<tr onclick="${peerClickAttr(x.peer)}">
+    <td><div class="pcell">${avaHtml(x.peer, false)}<b>${esc(gName(x.peer))}</b>${STABLE_DEPEG_IDS.includes(x.peer) ? ' <span class="b b-purple">脱锚</span>' : ""}</div></td><td class="mu">${x.rel}</td><td class="mono">${usd(x.w)}</td>
+    <td class="mono">${isNum(x.p) ? pct(x.p * 100, 1) : "—"}</td><td class="mono">${isNum(x.p) ? usd(x.w * (1 - x.p)) : "—"}</td>
+    <td>${!isNum(x.p) ? '<span class="mu">无评分</span>' : edgeRetainBadge(x.p)}</td></tr>`).join("") || `<tr><td colspan="6" class="mu">无关联边</td></tr>`;
+}
+
+function svgTheme() {
+  const dk = S.theme === "dark";
+  return {
+    boxFill: dk ? "#161e2b" : "#ffffff",
+    tx: dk ? "#f1f5f9" : "#1f2421",
+    sub: dk ? "#94a3b8" : "#555b57",
+    mu: dk ? "#64748b" : "#7a807c",
+    keep: dk ? "#38bdf8" : "#275882",
+    drop: dk ? "#fb7185" : "#cc4b31",
+    hop2: dk ? "#fbbf24" : "#b8741a",
+    focFill: dk ? "#172554" : "#edf4fa",
+    focStroke: dk ? "#38bdf8" : "#275882",
+    focTx: dk ? "#ffffff" : "#15324b",
+    focSub: dk ? "#93c5fd" : "#275882",
+    focWarn: dk ? "#fca5a5" : "#b83b22"
+  };
+}
+function drawFlowSvg(svgId, n, holds, creds, hop2, lite) {
+  const T = svgTheme(), X = [14, 258, 495, 672], BW = 142, BH = 38, CY = 152, sevCut = 0.70;
+  const y = (i, c) => {
+    if (c <= 1) return CY - BH / 2;
+    const span = Math.min(200, (c - 1) * 50);
+    return CY - span / 2 + i * (span / (c - 1)) - BH / 2;
+  };
+  const sw = w => Math.max(1.3, Math.min(4.5, Math.log10(Math.max(w, 1e5)) - 4)).toFixed(1);
+  const col = p => isNum(p) && p < sevCut ? T.drop : T.keep;
+  const clickFn = peer => lite ? userPeerClick(peer) : peerClickAttr(peer);
+  const box = (x, yy, peer, sub, stroke) => `<g style="cursor:pointer" onclick="${clickFn(peer)}"><rect x="${x}" y="${yy}" width="${BW}" height="${BH}" rx="7" fill="${T.boxFill}" stroke="${stroke}" stroke-width="1.3"/><text x="${x + 8}" y="${yy + 15.5}" fill="${T.tx}" font-size="11" font-weight="600">${esc(gName(peer).slice(0, 17))}</text><text x="${x + 8}" y="${yy + 29.5}" fill="${T.sub}" font-size="9.5" font-family="JetBrains Mono">${sub}</text></g>`;
+  const curve = (x1, y1, x2, y2, c, w, dash, mk) => `<path d="M${x1} ${y1} C${(x1 + x2) / 2} ${y1},${(x1 + x2) / 2} ${y2},${x2 - 4} ${y2}" fill="none" stroke="${c}" stroke-opacity=".8" stroke-width="${w}" ${dash ? 'stroke-dasharray="4,3"' : ""} marker-end="url(#${mk})"/>`;
+  let s = `<defs>
+    <marker id="fk_${svgId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${T.keep}"/></marker>
+    <marker id="fd_${svgId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${T.drop}"/></marker>
+    <marker id="fh_${svgId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${T.hop2}"/></marker>
+  </defs>`;
+  s += `<text x="${X[0]}" y="17" fill="${T.sub}" font-size="10.5" font-weight="700">上游资产 (债务方) ▶</text><text x="${X[1]}" y="17" fill="${T.focStroke}" font-size="10.5" font-weight="700">当前协议 ▶</text><text x="${X[2]}" y="17" fill="${T.sub}" font-size="10.5" font-weight="700">一跳债权方 ▶</text><text x="${X[3]}" y="17" fill="${T.hop2}" font-size="10.5" font-weight="700">二跳波及方</text>`;
+  s += `<text x="${X[0]}" y="303" fill="${T.mu}" font-size="9.5">箭头 = 风险传导方向 (债务方 ▶ 债权方) · 实线 = 净留存 r̂ ≥ 70% · 红虚线 = 重度净撤出 (r̂ &lt; 70%)</text>`;
+  const pos = {};
+  holds.forEach((d, i) => {
+    const yy = y(i, holds.length), drop = isNum(d.p) && d.p < sevCut;
+    s += curve(X[0] + BW, yy + BH / 2, X[1], CY, col(d.p), sw(d.w), drop, drop ? `fd_${svgId}` : `fk_${svgId}`);
+    s += box(X[0], yy, d.peer, `${usd(d.w)} · r̂ ${isNum(d.p) ? pct(d.p * 100, 0) : "—"}`, col(d.p));
+  });
+  creds.forEach((d, i) => {
+    const yy = y(i, creds.length), drop = isNum(d.p) && d.p < sevCut;
+    pos[d.peer] = yy + BH / 2;
+    s += curve(X[1] + 158, CY, X[2], yy + BH / 2, col(d.p), sw(d.w), drop, drop ? `fd_${svgId}` : `fk_${svgId}`);
+    s += box(X[2], yy, d.peer, `${usd(d.w)} · r̂ ${isNum(d.p) ? pct(d.p * 100, 0) : "—"}`, col(d.p));
+  });
+  hop2.forEach((d, i) => {
+    const yy = y(i, hop2.length);
+    s += curve(X[2] + BW, pos[d.via] ?? CY, X[3], yy + BH / 2, T.hop2, 1.4, true, `fh_${svgId}`);
+    s += box(X[3], yy, d.peer, `经 ${esc(gName(d.via).slice(0, 8))} · ${usd(d.w)}`, T.hop2);
+  });
+  s += `<rect x="${X[1]}" y="${CY - 31}" width="158" height="62" rx="9" fill="${T.focFill}" stroke="${T.focStroke}" stroke-width="2"/><text x="${X[1] + 10}" y="${CY - 10}" fill="${T.focTx}" font-size="12.5" font-weight="700">${esc(n.name.slice(0, 17))}</text><text x="${X[1] + 10}" y="${CY + 8}" fill="${T.focSub}" font-size="10.5" font-family="JetBrains Mono">${usd(n.exposureUsd)}</text><text x="${X[1] + 10}" y="${CY + 23}" fill="${T.focWarn}" font-size="10" font-family="JetBrains Mono">-${pct(n.poolDropPct)} · HHI ${num(n.hhi)}</text>`;
+  if (!holds.length && !creds.length) s += `<text x="300" y="250" fill="${T.mu}" font-size="11.5">无跨协议关联边</text>`;
+  $(svgId).innerHTML = s;
+}
+
+function setLens(l) { S.lens = l; document.querySelectorAll("[data-lens]").forEach(b => b.classList.toggle("active", b.dataset.lens === l)); $("sortSel").disabled = l !== "mid"; renderRanking(); }
+function renderRanking() {
+  const nm = nodeMap(), qq = ($("q").value || "").toLowerCase();
+  let rows = [];
+  if (S.lens === "alpha") {
+    const aq = hzH().workbench_case.review.alphaQueue || [];
+    if (aq.length) {
+      rows = aq.map(q => ({ ...(nm[String(q.entityId)] || {}), id: String(q.entityId), name: q.targetName, category: q.sourceClass, exposureUsd: q.exposure, _q: q, _isAlpha: true }));
+      $("lensNote").innerHTML = `<b>Alpha 去规模化高危排雷副榜</b>（$15M ≤ TVL ≤ $5B · 零 TVL 乘数）：0.52·p̂_stress + 0.36·预计净撤出率 + 0.12·HHI，剔除大盘巨鲸垄断。`;
+    } else {
+      rows = netH().nodes.filter(n => !n.isBaseHub && n.exposureUsd >= 5e6).sort((a, b) => (b.poolDropPct ?? -1) - (a.poolDropPct ?? -1));
+      $("lensNote").innerHTML = `<b>Alpha 去规模化高危排雷副榜</b>（中坚池净撤出率排序）。`;
+    }
+  } else if (S.lens === "mid") {
+    const k = $("sortSel").value;
+    rows = netH().nodes.filter(n => !n.isBaseHub && n.exposureUsd >= 5e6).sort((a, b) => (b[k] ?? -1) - (a[k] ?? -1));
+    $("lensNote").innerHTML = `启发式筛选：排除储备代币与 TVL ≥ $1B 底座，保留敞口 ≥ $5M 协议。`;
+  } else if (S.lens === "m7") {
+    rows = (hzH().workbench_case.review.queue || []).map(q => ({ ...(nm[String(q.entityId)] || {}), id: String(q.entityId), name: q.targetName, category: q.sourceClass, exposureUsd: q.exposure, _q: q }));
+    $("lensNote").innerHTML = `M7 巨鲸系统主榜 (FM + LLM + 门控 · 按期望美元净流失排序 · drafter: ${esc(hzH().workbench_case.drafterMode || "—")})。`;
+  } else {
+    rows = (hzH().candidate_set_m2 || []).slice(0, 25).map(c => ({ ...(nm[String(c.protocol)] || {}), id: String(c.protocol), name: c.name, category: c.category, exposureUsd: c.weight }));
+    $("lensNote").innerHTML = `M2 (静态快照基线)：仅按当前敞口 W(t) 排序。`;
+  }
+  if (qq) rows = rows.filter(r => `${r.name} ${r.category} ${r.topCounterpartyName}`.toLowerCase().includes(qq));
+  $("rankBody").innerHTML = rows.slice(0, 30).map((r, i) => {
+    const q = r._q;
+    const act = q ? (q.demoted ? `${actionBadge(q.rawAction)} → ${actionBadge(q.ticketAction)}` : actionBadge(q.ticketAction)) : (r.m7InQueue ? actionBadge(r.m7TicketAction) : (r.alphaInQueue ? actionBadge(r.alphaTicketAction) : '<span class="mu">—</span>'));
+    const drop = q && isNum(q.dropPct) ? Math.abs(q.dropPct) : r.poolDropPct;
+    const pStrSub = r._isAlpha && q && isNum(q.pStress) ? ` · p̂_str ${pct(q.pStress * 100, 1)}` : "";
+    return `<tr class="${r.id === S.focus ? "sel" : ""}" onclick="${nm[r.id] ? `setFocus('${esc(r.id)}')` : ""}">
+      <td class="mono mu">${i + 1}</td><td><div class="pcell">${avaHtml(r, false)}<div><b>${esc(r.name)}</b><div class="mu" style="font-size:11px">${esc(r.category)}${pStrSub}</div></div></div></td>
+      <td class="mono">${usd(r.exposureUsd)}</td><td class="mono"><span class="red">${pct(drop)}</span> <span class="mu">/ ${pct(r.flowDropPct)}</span></td>
+      <td class="mono">${num(r.hhi)} <span class="mu" style="font-size:11px">${esc(r.topCounterpartyName ?? "")} ${pct(r.topCounterpartySharePct, 0)}</span></td>
+      <td class="mono blue">${usd(r.spilloverPredUsd)}</td><td>${act}</td></tr>`;
+  }).join("") || `<tr><td colspan="7" class="mu">无数据</td></tr>`;
+}
+
+function setBt(k) {
+  S.bt = k; document.querySelectorAll("[data-bt]").forEach(b => b.classList.toggle("active", b.dataset.bt === k));
+  $("btWf").style.display = k === "wf" ? "flex" : "none";
+  if ($("btV4h")) $("btV4h").style.display = k === "v4h" ? "flex" : "none";
+  $("btCrisis").style.display = k === "crisis" ? "grid" : "none";
+  $("btP29").style.display = k === "p29" ? "flex" : "none";
+  $("wfSel").style.display = k === "wf" ? "" : "none"; $("wfAmpSeg").style.display = k === "wf" ? "" : "none";
+  if ($("wfBoardSeg")) $("wfBoardSeg").style.display = k === "wf" ? "" : "none";
+}
+const resolved = () => [...(S.hist.snapshots || [])]
+  .filter(s => s.backtestResolved)
+  .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || (a.horizonWeeks - b.horizonWeeks));
+function fillWfSelect() {
+  $("wfSel").innerHTML = `<option value="ALL">全部已交割窗口</option>` + resolved().map(s => {
+    const aTxt = isNum(s.alphaHits) ? ` · Alpha ${s.alphaHits}/${s.alphaTotal}` : "";
+    return `<option value="${esc(s.snapshotId)}">${esc(s.date)} → ${esc(s.realizedDate)} (h=${s.horizonWeeks}w · M7 ${s.backtestHits}/${s.backtestTotal} · M2 ${s.m2StressedHits}/${s.m2StressedTotal}${aTxt})</option>`;
+  }).join("");
+}
+function renderWf() {
+  const sel = $("wfSel").value || "ALL", wf = S.hist.liveWalkForwardSummary || {}, awf = S.hist.alphaWalkForwardSummary || {};
+  const hasAlphaWf = (awf.alphaTotal || 0) > 0;
+  if ($("wfColAct")) $("wfColAct").textContent = S.wfBoard === "alpha" ? "门控动作" : "M6 → M7";
+  if ($("wfColHit")) $("wfColHit").textContent = S.wfBoard === "alpha" ? "同池高危撤出核验" : "Top-5% 净赎回";
+  if (S.wfBoard === "alpha") {
+    $("wfNote").innerHTML = hasAlphaWf
+      ? `<b>Alpha 去规模化排雷副榜交割</b>（$15M–$5B 中坚池 · 零 TVL 权重 · 期初锁价净赎回口径）：合计命中 <b>${awf.alphaHits}/${awf.alphaTotal} (${pct(awf.alphaPrecisionPct)})</b> vs 同池随机基准率 <b>${pct(awf.alphaUniverseMeanBaseRatePct)}</b>（期望命中 ${num(awf.alphaExpectedRandomHits, 1)} · <b>Lift ${num(awf.alphaLiftVsBaseRate, 2)}x</b>）；方向命中率 ${pct(awf.alphaDirectionPrecisionPct)}，捕获真实净流失 ${usd(awf.alphaCapturedLossUsd)}。`
+      : `Alpha 去规模化排雷副榜交割（待重新生成包含 Alpha 副榜的历史快照）。`;
+  } else {
+    const alphaAppend = hasAlphaWf ? `；Alpha 去规模化副榜 ${awf.alphaHits}/${awf.alphaTotal} (${pct(awf.alphaPrecisionPct)} vs 同池基准 ${pct(awf.alphaUniverseMeanBaseRatePct)})` : "";
+    $("wfNote").innerHTML = `净赎回交割口径 (DeXposure-FM v4 Net-Flow)：扣除 ETH/BTC 现货涨跌 Beta，按期初锁价折算原生代币净流出 Top-5% (detect_truly_stressed)。巨鲸主榜 M7 <b>${wf.m7StressedHits}/${wf.m7StressedTotal} (${pct(wf.m7StressedPrecisionPct)})</b> vs M2 ${wf.m2StressedHits}/${wf.m2StressedTotal} (${pct(wf.m2StressedPrecisionPct)})；捕获真实净流失 ${usd(wf.m7CapturedLossUsd)} vs ${usd(wf.m2CapturedLossUsd)}${alphaAppend}。`;
+  }
+  const rows = [];
+  for (const s of resolved()) {
+    if (sel !== "ALL" && s.snapshotId !== sel) continue;
+    const srcList = S.wfBoard === "alpha" ? (s.alphaRankings || []) : (s.rankings || []);
+    for (const r of srcList) {
+      if (S.wfBoard === "alpha" ? !r.inAlphaQueue : !r.inSupervisoryQueue) continue;
+      if (S.trkAmp === "high" && Math.abs(r.dropPct || 0) < 10) continue;
+      const realCls = (r.actualChangePct || 0) < 0 ? "red" : "green";
+      const hitCell = S.wfBoard === "alpha"
+        ? (r.backtestHit === true ? '<span class="b b-green">命中高危</span>' : `<span class="b b-mu">基准 ${pct(s.alphaBaseRatePct, 0)}</span>`)
+        : (r.backtestHit === true ? '<span class="b b-green">命中</span>' : r.backtestHit === false ? '<span class="b b-mu">未命中</span>' : '<span class="mu">—</span>');
+      rows.push(`<tr onclick="${S.net && nodeMap()[r.entityId] ? `showView('vOverview'); setFocus('${esc(r.entityId)}')` : ""}">
+        <td class="mono">${esc(s.date)} → ${esc(s.realizedDate)} <span class="b b-blue">h=${s.horizonWeeks}w</span></td><td class="mono">${r.rank}</td>
+        <td><div class="pcell">${avaHtml(r.entityId, false)}<b>${esc(r.targetName)}</b> <span class="mu">${esc(r.category)}</span></div></td><td class="mono">${usd(r.exposure)}</td>
+        <td class="mono red">${pct(r.dropPct, 2)}</td><td class="mono ${realCls}">${(r.actualChangePct || 0) > 0 ? "+" : ""}${pct(r.actualChangePct, 2)}</td><td class="mono">${pct(r.flowActualChangePct, 1)}</td>
+        <td class="mono">${usd(r.realizedLossUsd)}</td><td>${r.demoted ? `${actionBadge(r.rawAction)} → ${actionBadge(r.ticketAction)}` : actionBadge(r.ticketAction)}</td>
+        <td>${hitCell}</td></tr>`);
+    }
+  }
+  $("wfBody").innerHTML = rows.join("") || `<tr><td colspan="10" class="mu">当前筛选条件下无记录</td></tr>`;
+}
+function renderV4Holdout() {
+  if (!$("v4hBody")) return;
+  const v4 = S.hist.v4Holdout33Weeks || {}, hz = v4.horizons || {}, bl = v4.baselines || {};
+  $("v4hNote").innerHTML = `<b>DeXposure-FM v4 严格样本外评估</b>（${esc(v4.dateRange || "2025-01-06 .. 2025-08-18")} · 预校准仅使用 2024 验证集，零测试集泄漏）：特征与监督标签均按 DeFiLlama 原生历史现货价剥离 ETH/BTC 涨跌 Beta，比例留存校准与跨周期单调累积风险同时验证。`;
+  const hKeys = [["h1", "1W (7天)"], ["h4", "4W (30天)"], ["h8", "8W (60天)"], ["h12", "12W (90天)"]];
+  $("v4hBody").innerHTML = hKeys.map(([hk, lbl]) => {
+    const m = hz[hk]; if (!m) return "";
+    const mom = (bl.momentum_persistence || {})[hk] || {}, deg = (bl.degree_only || {})[hk] || {};
+    const nsAuroc = (m.node_stress_10pct || {}).auroc, momNs = (mom.node_stress_10pct || {}).auroc;
+    const erAuroc = (m.active_edge_retention_80pct || {}).auroc, momEr = (mom.active_retain_80pct || {}).auroc, degEr = (deg.active_retain_80pct || {}).auroc;
+    const fr = m.active_edge_fractional_retention || {};
+    const biasPp = isNum(fr.mean_pred) && isNum(fr.mean_true) ? ((fr.mean_pred - fr.mean_true) * 100) : null;
+    const aHit = m.walk_forward_alpha_top7_hit_rate, aBase = m.walk_forward_alpha_universe_base_rate;
+    const lift = isNum(aHit) && isNum(aBase) && aBase > 0 ? (aHit / aBase) : null;
+    return `<tr>
+      <td class="mono"><b>${lbl}</b></td>
+      <td class="mono">${m.n_eval_weeks} 周</td>
+      <td class="mono"><b class="green">${num(nsAuroc, 3)}</b> <span class="mu">vs ${num(momNs, 3)}</span></td>
+      <td class="mono"><b class="blue">${num(erAuroc, 3)}</b> <span class="mu">vs ${num(momEr, 3)} / ${num(degEr, 3)}</span></td>
+      <td class="mono">${frac(fr.mean_pred)} vs ${frac(fr.mean_true)} <span class="b b-green">${biasPp !== null ? (biasPp >= 0 ? "+" : "") + biasPp.toFixed(2) + " pp" : "—"}</span></td>
+      <td class="mono"><span class="b b-green">${frac(m.monotonicity_violation_rate)}</span></td>
+      <td class="mono"><b>${frac(m.walk_forward_whale_top7_hit_rate)}</b></td>
+      <td class="mono"><b class="red">${frac(aHit)}</b> <span class="mu">vs ${frac(aBase)}</span> ${lift ? `<span class="b b-green">${lift.toFixed(2)}x</span>` : ""}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="8" class="mu">暂无 FM-v4 样本外报告</td></tr>`;
+}
+function renderCrisis() {
+  const R = S.hist.historicalCrisisReplays || {};
+  const card = (rep, tId, bId, label) => {
+    if (!rep) { $(bId).innerHTML = '<span class="mu">无数据</span>'; return; }
+    $(tId).textContent = `${label}：${rep.date} → ${rep.futureDate} (h=${rep.horizonWeeks}w)`;
+    $(bId).innerHTML = `<div class="stats">
+      <div class="st"><div class="stl">节点 / 边</div><div class="stv">${rep.nNodes} / ${rep.nEdges}</div></div>
+      <div class="st"><div class="stl">告警 / 置信度</div><div class="stv">${rep.nAlerts} / ${frac(rep.meanConfidence)}</div></div>
+      <div class="st"><div class="stl">精确率 M6 → M7</div><div class="stv">${frac(rep.precisionM6)} → ${frac(rep.precisionM7)}</div></div>
+      <div class="st"><div class="stl">误干预 M6 → M7</div><div class="stv">${frac(rep.firM6)} → ${frac(rep.firM7)}</div></div></div>
+      <table><thead><tr><th>情景</th><th>总损失</th><th>传染损失</th><th>波及</th></tr></thead><tbody>${(rep.scenarios || []).map(x => `<tr><td>${esc(x.scenarioId)} ${esc(x.name)}</td><td class="mono">${usd(x.totalLossUsd)}</td><td class="mono">${usd(x.contagionLossUsd)}</td><td class="mono">${x.nAffected ?? "—"}</td></tr>`).join("")}</tbody></table>
+      <table><thead><tr><th>#</th><th>协议</th><th>敞口</th><th>M6 → M7</th><th>真实压力</th><th>实际损失</th></tr></thead><tbody>${(rep.tickets || []).map(t => `<tr><td class="mono">${t.rank}</td><td><b>${esc(t.targetName)}</b> <span class="mu">${esc(t.category)}</span></td><td class="mono">${usd(t.exposureUsd)}</td><td>${t.demoted ? `${actionBadge(t.rawAction)} → ` : ""}${actionBadge(t.ticketAction)}</td><td>${t.inStressed ? '<span class="b b-green">是</span>' : '<span class="b b-mu">否</span>'}</td><td class="mono">${usd(t.actualLossUsd)}</td></tr>`).join("")}</tbody></table>`;
+  };
+  card(R.terra, "terraTitle", "terraBody", "2022 Terra");
+  card(R.ftx, "ftxTitle", "ftxBody", "2022 FTX");
+}
+function renderP29() {
+  const p = S.hist.paperBacktest29Weeks || {};
+  $("p29Note").innerHTML = `<b>论文 B5 原始 USD TVL 口径存档</b>（含市场现货涨跌 Beta，供论文复现对照；净流量口径请看左侧「2025 33周样本外 FM-v4」）：${esc(p.dateRange)} · h=${p.horizonWeeks}w · ${esc(p.llmModel)} · 精确率 M7 ${frac(p.m7TicketPrecision)} / M6 ${frac(p.m6TicketPrecision)} / M2 ${frac(p.m2TicketPrecision)} · 误干预 M7 ${frac(p.m7FalseInterventionRate)} / M6 ${frac(p.m6FalseInterventionRate)} · 胜 ${p.m7VsM2StrictWins} 平 ${p.m7VsM2Ties} 负 ${p.m7VsM2Losses}`;
+  $("p29Body").innerHTML = (p.weeklyLedger || []).map(w => `<tr><td class="mono">${esc(w.date)}</td><td class="mono">${w.nStressed}</td><td class="mono">${frac(w.m7Precision)}</td><td class="mono">${frac(w.m6Precision)}</td><td class="mono">${frac(w.m2Precision)}</td><td class="mono">${frac(w.m7Fpr)}</td><td class="mono">${frac(w.m6Fpr)}</td><td>${w.m7StrictWinVsM2 ? '<span class="b b-green">胜</span>' : w.m7WinOrTieVsM2 ? '<span class="b b-mu">平</span>' : '<span class="b b-red">负</span>'}</td></tr>`).join("");
+}
+
+function simSnap(pred) {
+  const g = S.graph, pi = pIdx(), nodes = {};
+  for (const [id, v] of Object.entries(g.nodes)) nodes[id] = { tvlUsd: pred ? ((v.predTvlUsd || {})[S.h] || 0) : (v.tvlUsd || 0) };
+  const edges = [];
+  if (!pred) {
+    for (const e of g.edges) edges.push({ source: e[0], target: e[1], weight: e[2] });
+  } else if (g.weightMode === "fractional_retention") {
+    for (const e of g.edges) {
+      const r = e[pi] === null || e[pi] === undefined ? 1.0 : Number(e[pi]);
+      const w = Number(e[2]) * r;
+      if (w >= 1.0) edges.push({ source: e[0], target: e[1], weight: w });
+    }
+  } else {
+    for (const e of g.edges) if (e[pi] === null || e[pi] >= g.piMin) edges.push({ source: e[0], target: e[1], weight: e[2] });
+  }
+  return { nodes, edges };
+}
+function tokenCreditorExposure(ids) {
+  const set = new Set(ids), nodes = S.graph.nodes;
+  let sum = 0;
+  for (const e of S.graph.edges) if (set.has(e[1]) && !set.has(e[0]) && ((nodes[e[0]] || {}).tvlUsd || 0) > 0) sum += e[2] || 0;
+  return sum;
+}
+function setSimMode(m) {
+  if (S.simMode === m) return;
+  S.simMode = m;
+  document.querySelectorAll("#simModePills [data-sm]").forEach(b => b.classList.toggle("active", b.dataset.sm === m));
+  const cur = Number($("simShock").value);
+  if (m === "depeg" && cur === 50) { $("simShock").value = "20"; $("simShockLbl").textContent = "20%"; }
+  else if (m === "protocol" && cur === 20) { $("simShock").value = "50"; $("simShockLbl").textContent = "50%"; }
+  $("simSel").value = ""; fillSimSelect(); runSim();
+}
+function fillSimSelect() {
+  const prev = $("simSel").value;
+  if (S.simMode === "depeg") {
+    $("simShockTitle").textContent = "脱锚折价";
+    const presets = [
+      { v: "D:USDC,USDT", label: `USDC + USDT · 持仓 ${usd(tokenCreditorExposure(["USDC", "USDT"]))}` },
+      { v: "USDC", label: `USDC · 持仓 ${usd(tokenCreditorExposure(["USDC"]))}` },
+      { v: "USDT", label: `USDT · 持仓 ${usd(tokenCreditorExposure(["USDT"]))}` },
+      { v: "USDE", label: `USDE · 持仓 ${usd(tokenCreditorExposure(["USDE"]))}` },
+      { v: "PYUSD", label: `PYUSD · 持仓 ${usd(tokenCreditorExposure(["PYUSD"]))}` },
+      { v: "D:USDC,USDT,USDE,PYUSD", label: `四大稳定币联合 · 持仓 ${usd(tokenCreditorExposure(["USDC", "USDT", "USDE", "PYUSD"]))}` }
+    ];
+    const otherRes = ["WETH", "WBTC"].filter(k => S.graph.nodes[k]).map(k => ({ v: k, label: `${k} 储备折价 · 持仓 ${usd(tokenCreditorExposure([k]))}` }));
+    let html = `<optgroup label="稳定币脱锚 (w·α 直接减值)">${presets.map(p => `<option value="${esc(p.v)}">${esc(p.label)}</option>`).join("")}</optgroup>`;
+    if (otherRes.length) html += `<optgroup label="底层储备资产">${otherRes.map(p => `<option value="${esc(p.v)}">${esc(p.label)}</option>`).join("")}</optgroup>`;
+    $("simSel").innerHTML = html;
+    $("simModelNote").textContent = `扩展模式：R1 持仓减值 w·α，损失 >10% TVL 触发 R2+ DebtRank (预测图按 w·r̂ 连续折算)`;
+  } else {
+    $("simShockTitle").textContent = "冲击比例";
+    const cand = netH().nodes.filter(n => !n.isTokenIssuer && isNum(n.spilloverPredUsd)).sort((a, b) => b.spilloverPredUsd - a.spilloverPredUsd);
+    const q = (hzH().workbench_case.review.queue || []).map(x => String(x.entityId)).filter(id => (S.graph.nodes[id] || {}).tvlUsd > 0).slice(0, 3);
+    const aq = (hzH().workbench_case.review.alphaQueue || []).map(x => String(x.entityId)).filter(id => (S.graph.nodes[id] || {}).tvlUsd > 0).slice(0, 3);
+    let html = q.length ? `<option value="Q:${q.join(",")}">M7 巨鲸主榜前 ${q.length} 名 (${q.map(gName).map(esc).join(" + ")})</option>` : "";
+    if (aq.length) html += `<option value="A:${aq.join(",")}">Alpha 排雷副榜前 ${aq.length} 名 (${aq.map(gName).map(esc).join(" + ")})</option>`;
+    html += `<optgroup label="单协议 (按外溢排序)">${cand.map(n => `<option value="${esc(n.id)}">${esc(n.name)} · 外溢 ${usd(n.spilloverPredUsd)}</option>`).join("")}</optgroup>`;
+    $("simSel").innerHTML = html;
+    $("simModelNote").textContent = `DebtRank · 预测图边权按连续比例净留存 w·r̂ 折算 + FM 预测锁价 TVL`;
+  }
+  const validVals = ($("simSel").innerHTML.match(/value="([^"]+)"/g) || []).map(m => m.slice(7, -1));
+  $("simSel").value = (prev && validVals.includes(prev)) ? prev : (validVals[0] || "");
+}
+function simulateFocus() {
+  showView("vContagion");
+  if (S.simMode !== "protocol") setSimMode("protocol");
+  const validVals = ($("simSel").innerHTML.match(/value="([^"]+)"/g) || []).map(m => m.slice(7, -1));
+  if (!validVals.includes(S.focus)) $("simSel").insertAdjacentHTML("afterbegin", `<option value="${esc(S.focus)}">${esc(gName(S.focus))}</option>`);
+  $("simSel").value = S.focus; runSim();
+}
+function simulateTokenDepeg(tokId) {
+  showView("vContagion");
+  if (S.simMode !== "depeg") setSimMode("depeg");
+  $("simSel").value = String(tokId); runSim();
+}
+function runSim() {
+  const v = $("simSel").value; if (!v) return;
+  const shocked = (v.startsWith("Q:") || v.startsWith("A:") || v.startsWith("D:")) ? v.slice(2).split(",") : [v];
+  const f = Number($("simShock").value) / 100;
+  const obs = simulateContagionTraced(simSnap(false), shocked, { shockFraction: f, shockMode: S.simMode });
+  const pred = simulateContagionTraced(simSnap(true), shocked, { shockFraction: f, shockMode: S.simMode });
+  if (S.simMode === "depeg") {
+    $("sDirectKt").textContent = "R1 持仓直接减值 (预测图)";
+    $("sDirect").textContent = `${usd(pred.direct_loss)}`;
+    $("sDirectSub").textContent = `观测图 ${usd(obs.direct_loss)} · 敞口池 ${usd(pred.exposed_pool_usd)} × ${Math.round(f * 100)}%`;
+    $("sObsKt").textContent = "观测图 G_t 总损失 (R1+R2+)";
+    $("sObs").textContent = usd(obs.total_loss);
+    $("sObsSub").textContent = `R1 ${usd(obs.direct_loss)} · R2+ ${usd(obs.contagion_loss)} · ${obs.per_node.length} 家`;
+    $("sPredKt").textContent = "FM 预测图总损失 (R1+R2+)";
+    $("sPred").textContent = usd(pred.total_loss);
+    $("sPredSub").textContent = `R1 ${usd(pred.direct_loss)} · R2+ ${usd(pred.contagion_loss)} · ${pred.per_node.length} 家`;
+    $("sRounds").textContent = `${pred.max_loss_round} 轮 / 受困 ${pred.affected_count} 家`;
+    $("sRoundsSub").textContent = `观测图受困 ${obs.affected_count} · 累计 ${pred.affected_history.join(" → ")}`;
+    $("cascTitle").textContent = `脱锚冲击传播路径 (h=${S.h}w)`;
+  } else {
+    $("sDirectKt").textContent = "直接损失 (冲击源)";
+    $("sDirect").textContent = usd(pred.direct_loss);
+    $("sDirectSub").textContent = pred.shocked_nodes.length ? `${pred.shocked_nodes.map(gName).join(" + ")} (×${Math.round(f * 100)}%)` : "TVL 为 0";
+    $("sObsKt").textContent = "观测图 G_t 传染损失";
+    $("sObs").textContent = usd(obs.contagion_loss);
+    $("sObsSub").textContent = `受损 ${obs.per_node.length} · 受困 ${obs.affected_count - obs.shocked_nodes.length}`;
+    $("sPredKt").textContent = "FM 预测图传染损失";
+    $("sPred").textContent = usd(pred.contagion_loss);
+    $("sPredSub").textContent = `受损 ${pred.per_node.length} · 受困 ${pred.affected_count - pred.shocked_nodes.length} · Δ ${usd(pred.contagion_loss - obs.contagion_loss)}`;
+    $("sRounds").textContent = `${pred.propagation_rounds} 轮 / ${pred.affected_count - pred.shocked_nodes.length}`;
+    $("sRoundsSub").textContent = `累计 ${pred.affected_history.join(" → ")}`;
+    $("cascTitle").textContent = `逐轮传播路径 (h=${S.h}w)`;
+  }
+  drawCascadeSvg("cascSvg", pred, false);
+  const om = Object.fromEntries(obs.per_node.map(r => [r.id, r.lossUsd]));
+  $("simBody").innerHTML = pred.per_node.slice(0, 40).map(r => `<tr onclick="${nodeMap()[r.id] ? `showView('vOverview'); setFocus('${esc(r.id)}')` : ""}">
+    <td><span class="b ${r.round === 1 ? "b-red" : r.round === 2 ? "b-amber" : "b-blue"}">R${r.round}</span></td><td><div class="pcell">${avaHtml(r.id, false)}<b>${esc(gName(r.id))}</b></div></td>
+    <td class="mu">${esc(gName(r.via))}</td><td class="mono red">${usd(r.lossUsd)}</td><td class="mono mu">${usd(om[r.id])}</td>
+    <td class="mono">${pct(r.lossPctOfTvl)}</td><td>${r.distressed ? '<span class="b b-red">是</span>' : ""}</td></tr>`).join("") || `<tr><td colspan="7" class="mu">无受传染协议</td></tr>`;
+  $("simText").textContent = pred.per_node.length ? `首轮最大受损：${pred.per_node.filter(r => r.round === 1).slice(0, 3).map(r => `${gName(r.id)} ${usd(r.lossUsd)}`).join("、")}` : "";
+}
+
+function drawCascadeSvg(svgId, res, lite) {
+  const T = svgTheme(), isDepeg = res.shock_mode === "depeg";
+  const cols = [res.shocked_nodes.map(id => ({ id, lossUsd: null })), ...[1, 2, 3].map(k => res.per_node.filter(r => k < 3 ? r.round === k : r.round >= 3).slice(0, 5))];
+  const X = [15, 210, 405, 600], BW = 152, BH = 42, CY = 175, pos = {};
+  const y = (i, c) => c <= 1 ? CY - BH / 2 : CY - Math.min(250, c * 52) / 2 + i * (Math.min(250, c * 52) / (c - 1)) - BH / 2;
+  const heads = isDepeg ? ["脱锚源 ▶", "R1 直接减值 ▶", "R2 二阶传染 ▶", "R3+ 深层波及"] : ["冲击源 ▶", "R1 首轮受损 ▶", "R2 二阶传染 ▶", "R3+ 深层波及"];
+  const colr = [isDepeg ? "#8b5cf6" : T.drop, T.hop2, T.keep, T.sub];
+  let s = `<defs>${colr.map((c, i) => `<marker id="cm_${svgId}_${i}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${c}"/></marker>`).join("")}</defs>`;
+  s += heads.map((h, i) => `<text x="${X[i]}" y="20" fill="${colr[i]}" font-size="11" font-weight="700">${h}</text>`).join("");
+  cols.forEach((list, c) => list.forEach((r, i) => {
+    const yy = y(i, list.length); pos[r.id] = { x: X[c] + BW, y: yy + BH / 2 };
+    if (c > 0) { const p = pos[r.via] || { x: X[c - 1] + BW, y: CY }; const mx = (p.x + X[c]) / 2; s += `<path d="M${p.x} ${p.y} C${mx} ${p.y},${mx} ${yy + BH / 2},${X[c] - 4} ${yy + BH / 2}" fill="none" stroke="${colr[c]}" stroke-opacity=".75" stroke-width="1.8" marker-end="url(#cm_${svgId}_${c})"/>`; }
+    const subTxt = c === 0 ? `-${Math.round(res.shock_fraction * 100)}%` : `${usd(r.lossUsd)} · ${pct(r.lossPctOfTvl)}`;
+    s += `<rect x="${X[c]}" y="${yy}" width="${BW}" height="${BH}" rx="7" fill="${T.boxFill}" stroke="${colr[c]}" stroke-width="1.4"/><text x="${X[c] + 8}" y="${yy + 17}" fill="${T.tx}" font-size="10.5" font-weight="600">${esc(gName(r.id).slice(0, 18))}</text><text x="${X[c] + 8}" y="${yy + 32}" fill="${T.sub}" font-size="9.5" font-family="JetBrains Mono">${subTxt}</text>`;
+  }));
+  if (!res.per_node.length) s += `<text x="255" y="180" fill="${T.mu}" font-size="12">无下游协议受波及</text>`;
+  $(svgId).innerHTML = s;
+}
+
+function renderHhi() {
+  const rows = netH().nodes.filter(n => !n.isBaseHub && isNum(n.hhi) && n.hhi >= 0.5 && n.exposureUsd >= 5e6).sort((a, b) => b.exposureUsd - a.exposureUsd);
+  $("hhiBody").innerHTML = rows.slice(0, 60).map(n => `<tr onclick="showView('vOverview'); setFocus('${esc(n.id)}')"><td><div class="pcell">${avaHtml(n, false)}<div><b>${esc(n.name)}</b> <span class="mu">${esc(n.category)}</span></div></div></td><td class="mono">${usd(n.exposureUsd)}</td>
+    <td><span class="b ${n.hhi >= 0.8 ? "b-red" : "b-amber"}">${num(n.hhi)}</span></td><td class="mono">${esc(n.topCounterpartyName ?? "—")} ${pct(n.topCounterpartySharePct, 0)}</td>
+    <td class="mono">${n.topProtoCounterpartyName ? `${esc(n.topProtoCounterpartyName)} ${pct(n.topProtoCounterpartySharePct, 0)}` : '<span class="mu">无</span>'}</td><td class="mono red">${pct(n.poolDropPct)}</td></tr>`).join("");
+}
+function renderGate() {
+  const rows = []; let dem = 0, tot = 0;
+  for (const h of ["1", "4", "8"]) for (const q of (S.hz[h].workbench_case.review.queue || [])) {
+    tot++; if (q.demoted) dem++;
+    rows.push({ win: `${S.hz[h].snapshot_date} h=${h}w`, q, outcome: '<span class="mu">待交割</span>' });
+  }
+  for (const s of resolved()) for (const r of (s.rankings || []).filter(r => r.inSupervisoryQueue)) {
+    tot++; if (r.demoted) dem++;
+    rows.push({ win: `${s.date} → ${s.realizedDate} h=${s.horizonWeeks}w`, q: r, outcome: `${r.backtestHit ? '<span class="b b-green">压力</span>' : '<span class="b b-mu">非压力</span>'} <span class="mono">${pct(r.actualChangePct, 2)}</span>` });
+  }
+  $("gateNote").textContent = `共 ${tot} 张工单，门控降级 ${dem} 张 · 29 周误干预率 M6 ${frac((S.hist.paperBacktest29Weeks || {}).m6FalseInterventionRate)} → M7 ${frac((S.hist.paperBacktest29Weeks || {}).m7FalseInterventionRate)}`;
+  rows.sort((a, b) => (b.q.demoted ? 1 : 0) - (a.q.demoted ? 1 : 0));
+  $("gateBody").innerHTML = rows.map(x => `<tr><td class="mono">${esc(x.win)}</td><td><b>${esc(x.q.targetName)}</b></td><td>${actionBadge(x.q.rawAction)}</td><td>${actionBadge(x.q.ticketAction)}</td>
+    <td class="mu" style="font-size:11px">${esc(x.q.gateNote || "")}</td><td>${x.outcome}</td></tr>`).join("");
+}
+
+// =========================================================================
+// SHARED 3D 4-TIER × 4-SECTOR ARCHITECTURAL TOPOLOGY (No Sphere Hairball)
+// =========================================================================
+function is3dActive() {
+  return (S.ed === "user" && S.uView === "uHome" && S.uLeft === "3d")
+    || (S.ed === "pro" && S.left === "3d");
+}
+function syncThreeHost() {
+  const wrap = $("threeWrap");
+  if (!wrap) return;
+  const showUser = S.ed === "user" && S.uView === "uHome" && S.uLeft === "3d";
+  const showPro = S.ed === "pro" && S.left === "3d";
+  const host = showUser ? $("userThreeHost") : showPro ? $("proThreeHost") : null;
+  if (host && host.appendChild && wrap.parentNode !== host) host.appendChild(wrap);
+  wrap.style.display = (showUser || showPro) ? "block" : "none";
+}
+function sectorAngle(cat) {
+  const c = String(cat || "");
+  if (["Lending", "Risk Curators", "Onchain Capital Allocator"].includes(c)) return 0.0;
+  if (["Liquid Staking", "Restaking", "Liquid Restaking", "Staking Pool"].includes(c)) return Math.PI * 0.5;
+  if (["CDP", "RWA", "Basis Trading"].includes(c)) return Math.PI;
+  return -Math.PI * 0.5;
+}
+function deckSpec(n) {
+  if (n.isTokenIssuer) return { tier: 0, y: 108, r: 38 };
+  if (n.isBaseHub) return { tier: 1, y: 38, r: 86 };
+  if ((n.totalTvlUsd || 0) >= 1e8) return { tier: 2, y: -34, r: 128 };
+  return { tier: 3, y: -106, r: 162 };
+}
+function compute3dPositions() {
+  if (S.layoutCache.pos) return S.layoutCache.pos;
+  const baseH = S.net.h4 || netH();
+  const allIds = [...new Set(["h1", "h4", "h8"].flatMap(k => (S.net[k] ? S.net[k].displayNodeIds : [])))];
+  const nm = Object.fromEntries(baseH.nodes.map(n => [n.id, n]));
+  const N = allIds.length;
+  const px = new Float64Array(N), py = new Float64Array(N), pz = new Float64Array(N);
+  const tR = new Float64Array(N), tAng = new Float64Array(N), tiers = new Int8Array(N);
+
+  const tierCounts = [0, 0, 0, 0];
+  for (let i = 0; i < N; i++) {
+    const n = nm[allIds[i]] || {}, d = deckSpec(n);
+    tiers[i] = d.tier; py[i] = d.y; tR[i] = d.r;
+    const k = tierCounts[d.tier]++;
+    const baseAng = d.tier === 0 ? (k / 6) * Math.PI * 2 : sectorAngle(n.category) + ((k % 9) - 4) * 0.14;
+    tAng[i] = baseAng;
+    const jitterR = d.r + ((k % 3) - 1) * (d.tier >= 2 ? 12 : 5);
+    px[i] = jitterR * Math.cos(baseAng);
+    pz[i] = jitterR * Math.sin(baseAng);
+  }
+  // 2D horizontal relaxation per deck so icons never collide while vertical tiers stay crisp
+  const fx = new Float64Array(N), fz = new Float64Array(N);
+  for (let it = 0; it < 95; it++) {
+    fx.fill(0); fz.fill(0);
+    for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+      if (tiers[i] !== tiers[j]) continue;
+      const dx = px[i] - px[j], dz = pz[i] - pz[j];
+      const d2 = dx * dx + dz * dz + 8, d = Math.sqrt(d2);
+      if (d < 36) {
+        const rep = (36 - d) * 0.55;
+        fx[i] += (rep * dx) / d; fz[i] += (rep * dz) / d;
+        fx[j] -= (rep * dx) / d; fz[j] -= (rep * dz) / d;
+      }
+    }
+    for (let i = 0; i < N; i++) {
+      const tx = tR[i] * Math.cos(tAng[i]), tz = tR[i] * Math.sin(tAng[i]);
+      const pull = tiers[i] === 0 ? 0.18 : 0.08;
+      fx[i] += (tx - px[i]) * pull;
+      fz[i] += (tz - pz[i]) * pull;
+      px[i] += Math.max(-6, Math.min(6, fx[i]));
+      pz[i] += Math.max(-6, Math.min(6, fz[i]));
+    }
+  }
+  const out = {};
+  for (let i = 0; i < N; i++) out[allIds[i]] = new THREE.Vector3(px[i], py[i], pz[i]);
+  S.layoutCache.pos = out;
+  return out;
+}
+function nodeRingCss3d(n) {
+  if (n.isTokenIssuer) return "#9333ea";
+  if (n.alphaInQueue) return "#e11d48";
+  if (n.m7InQueue) return "#d97706";
+  if (!n.isBaseHub && (n.poolDropPct || 0) >= hzDropWarnPct(S.h)) return "#e11d48";
+  if (n.isBaseHub) return "#0284c7";
+  return "#059669";
+}
+function nodeDiam3d(n) {
+  const base = Math.log10(Math.max(n.exposureUsd || 1, 1e6)) - 5.0;
+  return n.isTokenIssuer ? Math.max(16, Math.min(25, 11 + base * 3.0)) : Math.max(11, Math.min(23, 8 + base * 2.8));
+}
+function haloBadgeTexture() {
+  if (S.layoutCache.haloTex) return S.layoutCache.haloTex;
+  const cv = document.createElement("canvas"); cv.width = 128; cv.height = 128;
+  const ctx = cv.getContext ? cv.getContext("2d") : null;
+  if (ctx) {
+    ctx.strokeStyle = "rgba(39,88,130,0.92)"; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(64, 64, 58, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([7, 5]); ctx.strokeStyle = "rgba(217,119,6,0.85)"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(64, 64, 62, 0, Math.PI * 2); ctx.stroke();
+  }
+  S.layoutCache.haloTex = new THREE.CanvasTexture(cv);
+  return S.layoutCache.haloTex;
+}
+function logoBadgeTexture(n) {
+  if (!S.layoutCache.tex) S.layoutCache.tex = {};
+  const ring = nodeRingCss3d(n), key = `${S.theme}|${n.id}|${ring}|${n.logo || ""}`;
+  if (S.layoutCache.tex[key]) return S.layoutCache.tex[key];
+  const cv = document.createElement("canvas"); cv.width = 128; cv.height = 128;
+  const ctx = cv.getContext ? cv.getContext("2d") : null;
+  const tex = new THREE.CanvasTexture(cv);
+  const paint = img => {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, 128, 128);
+    ctx.fillStyle = S.theme === "dark" ? "#0f172a" : "#ffffff";
+    ctx.beginPath(); ctx.arc(64, 64, 52, 0, Math.PI * 2); ctx.fill();
+    if (img) {
+      ctx.save(); ctx.beginPath(); ctx.arc(64, 64, 48, 0, Math.PI * 2); ctx.clip();
+      const iw = img.naturalWidth || img.width || 64, ih = img.naturalHeight || img.height || 64;
+      const sc = Math.max(96 / iw, 96 / ih), dw = iw * sc, dh = ih * sc;
+      ctx.drawImage(img, 64 - dw / 2, 64 - dh / 2, dw, dh); ctx.restore();
+    } else {
+      const mono = String(n.name || n.id || "?").replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g, "").slice(0, 3).toUpperCase();
+      ctx.fillStyle = S.theme === "dark" ? "#f1f5f9" : "#1f2421";
+      ctx.font = "700 32px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(mono, 64, 66);
+    }
+    ctx.strokeStyle = ring; ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.arc(64, 64, 52.5, 0, Math.PI * 2); ctx.stroke();
+    tex.needsUpdate = true;
+    if (S.three) S.three.dirty = true;
+  };
+  paint(null);
+  if (n.logo && typeof Image !== "undefined") {
+    const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => paint(img); img.src = n.logo;
+  }
+  S.layoutCache.tex[key] = tex;
+  return tex;
+}
+function set3dOpt(kind, val) {
+  if (kind === "lbl") {
+    S.t3Lbl = val;
+    document.querySelectorAll("[data-tlbl]").forEach(b => b.classList.toggle("active", b.dataset.tlbl === val));
+  } else {
+    S.t3Edg = val;
+    document.querySelectorAll("[data-tedg]").forEach(b => b.classList.toggle("active", b.dataset.tedg === val));
+  }
+  if (S.three) update3dSpotlight();
+}
+function zoom3d(dz) { if (!S.three) return; S.three.cam.position.z = Math.max(120, Math.min(680, S.three.cam.position.z + dz)); S.three.dirty = true; }
+function reset3d() { if (!S.three) return; S.three.grp.rotation.set(0.30, -0.45, 0); S.three.cam.position.set(0, 8, 365); S.t3Spot = S.focus; update3dSpotlight(); }
+function on3dNodeDblClick(id) {
+  const n = nodeMap()[id]; if (!n) return;
+  if (n.isTokenIssuer && STABLE_DEPEG_IDS.includes(id)) {
+    if (S.ed === "user") { showUserView("uStress"); userRunDepeg(id); }
+    else simulateTokenDepeg(id);
+  } else if (!n.isTokenIssuer) {
+    setFocus(id);
+    if (S.ed === "user") setUserLeftMode("flow");
+    else setLeftMode("dag");
+  }
+}
+function show3dTip(id, clientX, clientY) {
+  const tip = $("threeTip");
+  if (!id || !S.three) { tip.style.display = "none"; return; }
+  const n = nodeMap()[id] || {}, rect = $("threeWrap").getBoundingClientRect();
+  const tierNames = ["L0 底层储备", "L1 核心底座 (≥$1B)", "L2 主流协议 ($100M–$1B)", "L3 垂直池 (<$100M)"];
+  const d = deckSpec(n);
+  const ico = n.logo ? `<img src="${esc(n.logo)}" alt="" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:6px;border:1.5px solid ${nodeRingCss3d(n)};object-fit:cover"/>` : "";
+  const str3d = !n.isTokenIssuer && isNum(n.pStress) ? ` · 挤兑率 <span class="red">${pct(n.pStress * 100, 1)}</span>` : "";
+  tip.innerHTML = `<div style="font-weight:700;font-size:12.5px">${ico}${esc(n.name || id)}</div>
+    <div class="mu" style="margin:2px 0 4px">${tierNames[d.tier]} · ${esc(catZh(n.category, n.isTokenIssuer))}</div>
+    <div class="mono" style="font-size:11px;line-height:1.55">
+      敞口：<b>${usd(n.exposureUsd)}</b>${n.isTokenIssuer ? "" : ` / TVL ${usd(n.totalTvlUsd)}`}<br/>
+      预计锁价净撤出：<span class="red">${pct(n.poolDropPct, 1)}</span>${str3d}<br/>
+      最大依赖：${esc(n.topCounterpartyName ?? "—")} ${pct(n.topCounterpartySharePct, 0)}
+    </div>`;
+  tip.style.display = "block";
+  tip.style.left = Math.min(rect.width - 265, Math.max(10, clientX - rect.left + 14)) + "px";
+  tip.style.top = Math.min(rect.height - 135, Math.max(40, clientY - rect.top + 12)) + "px";
+}
+function update3dSpotlight() {
+  if (!S.three) return;
+  const nm = nodeMap(), spot = S.t3Hover || S.t3Spot || S.focus, dk = S.theme === "dark";
+  const nbrs = new Set();
+  let upCnt = 0, dnCnt = 0;
+  for (const l of S.three.lines) {
+    const e = l.userData, isUp = spot && e.source === spot, isDn = spot && e.target === spot, isInc = isUp || isDn;
+    if (isUp) { nbrs.add(e.target); upCnt++; }
+    if (isDn) { nbrs.add(e.source); dnCnt++; }
+    let vis = true;
+    if (S.t3Edg === "drop" && e.keptInPredGraph) vis = false;
+    if (S.t3Edg === "focus" && !isInc) vis = false;
+    l.visible = vis;
+    if (!vis) continue;
+    if (isInc) {
+      // Clear directional distinction: Blue = Upstream held asset; Amber = Downstream creditor; Red = Predicted severing
+      l.material.color.setHex(!e.keptInPredGraph ? 0xe11d48 : (isUp ? 0x0284c7 : 0xd97706));
+      l.material.opacity = 0.92;
+    } else {
+      l.material.color.setHex(e.keptInPredGraph ? (dk ? 0x334155 : 0xb5b3a8) : 0xe11d48);
+      l.material.opacity = spot ? (e.keptInPredGraph ? 0.14 : 0.34) : 0.30;
+    }
+  }
+  for (const sp of S.three.meshes) {
+    const id = sp.userData.id, baseD = sp.userData.diam, isSpot = id === spot, isNbr = nbrs.has(id);
+    sp.material.opacity = (!spot || isSpot || isNbr) ? 1.0 : 0.34;
+    const d = baseD * (isSpot ? 1.35 : isNbr ? 1.12 : 1.0);
+    sp.scale.set(d, d, 1);
+  }
+  if (S.three.halo && spot && S.three.pos[spot]) {
+    S.three.halo.visible = true;
+    S.three.halo.position.copy(S.three.pos[spot]);
+    const hd = nodeDiam3d(nm[spot] || {}) * 1.72;
+    S.three.halo.scale.set(hd, hd, 1);
+  } else if (S.three.halo) S.three.halo.visible = false;
+  S.three.nbrs = nbrs; S.three.spot = spot; S.three.dirty = true;
+  const sn = spot ? nm[spot] : null;
+  $("threeNote").textContent = sn
+    ? `${sn.name} · 上游持仓 ${upCnt} 条 (蓝) · 下游债权 ${dnCnt} 条 (橙)`
+    : `四层体量架构 × 四赛道象限`;
+}
+function project3dLabels() {
+  const T = S.three; if (!T || !is3dActive()) return;
+  const W = T.ren.domElement.clientWidth || 660, H = T.ren.domElement.clientHeight || 460;
+  const focal = (H * 0.5) / Math.tan(((T.cam.fov || 46) * Math.PI) / 360);
+  T.grp.updateMatrixWorld();
+  const nm = nodeMap(), spot = T.spot, nbrs = T.nbrs || new Set();
+  const cands = [], v = new THREE.Vector3(), placed = [];
+  T.screenHits = [];
+  for (let idx = 0; idx < T.labelItems.length; idx++) {
+    const it = T.labelItems[idx], sp = T.meshes[idx], id = it.id, n = nm[id] || {}, p = T.pos[id];
+    if (!p || !sp) { it.el.style.display = "none"; continue; }
+    v.copy(p).applyMatrix4(T.grp.matrixWorld);
+    const zWorld = v.z, camDist = Math.max(20, T.cam.position.z - zWorld);
+    v.project(T.cam);
+    if (v.z > 1 || v.z < -1) { it.el.style.display = "none"; continue; }
+    const sx = (v.x * 0.5 + 0.5) * W, sy = (-v.y * 0.5 + 0.5) * H;
+    const rPx = Math.max(8, (sp.scale.x * 0.5 * focal) / camDist);
+    T.screenHits.push({ id, sx, sy, rPx, camDist });
+    if (zWorld > 10 && (!spot || id === spot || nbrs.has(id))) placed.push([sx - rPx * 0.85, sy - rPx * 0.85, sx + rPx * 0.85, sy + rPx * 0.85]);
+    const isHover = id === S.t3Hover, isSpot = id === spot, isNbr = nbrs.has(id);
+    let show = false;
+    if (S.t3Lbl === "focus") show = isHover || isSpot || isNbr;
+    else if (S.t3Lbl === "all") show = true;
+    else show = isHover || isSpot || isNbr || n.isTokenIssuer || n.alphaInQueue || n.m7InQueue || (!n.isBaseHub && (n.poolDropPct || 0) >= hzDropWarnPct(S.h));
+    if (!show || sx < 135 || sx > W - 28 || sy < 24 || sy > H - 44) { it.el.style.display = "none"; continue; }
+    const prio = isHover ? 2000 : isSpot ? 1900 : isNbr ? 1500 : n.isTokenIssuer ? 1300 : n.alphaInQueue ? 1200 : n.m7InQueue ? 1100 : 700 + (n.poolDropPct || 0);
+    cands.push({ it, sx, sy, rPx, zWorld, prio, force: isHover || isSpot, w: it.w });
+  }
+  cands.sort((a, b) => b.prio - a.prio);
+  const shownIds = new Set();
+  for (const c of cands) {
+    const hw = c.w / 2 + 3, y1 = c.sy + c.rPx + 2, y2 = y1 + 19, x1 = c.sx - hw, x2 = c.sx + hw;
+    if (!c.force) {
+      let hit = false;
+      for (const b of placed) if (x1 < b[2] && x2 > b[0] && y1 < b[3] && y2 > b[1]) { hit = true; break; }
+      if (hit) { c.it.el.style.display = "none"; continue; }
+    }
+    placed.push([x1, y1, x2, y2]); shownIds.add(c.it.id);
+    const el = c.it.el; el.style.display = "block";
+    el.classList.toggle("foc", c.it.id === spot || c.it.id === S.t3Hover);
+    el.style.left = c.sx.toFixed(1) + "px"; el.style.top = (c.sy + c.rPx).toFixed(1) + "px";
+    el.style.opacity = c.force ? "1" : "0.94";
+  }
+  for (const it of T.labelItems) if (!shownIds.has(it.id)) it.el.style.display = "none";
+}
+function build3d() {
+  syncThreeHost();
+  if (typeof THREE === "undefined") { $("threeNote").textContent = "three.js 未加载"; return; }
+  const mount = $("threeMount"), lblRoot = $("threeLabels"), h = netH(), nm = nodeMap();
+  if (!S.three) {
+    const W = mount.clientWidth || 680, H = mount.clientHeight || 460;
+    const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(46, W / H, 1, 3000);
+    const ren = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    ren.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    cam.position.set(0, 8, 365); ren.setSize(W, H); mount.appendChild(ren.domElement);
+    const grp = new THREE.Group(); grp.rotation.set(0.30, -0.45, 0); scene.add(grp);
+    let drag = false, moved = false, px = 0, py = 0;
+    const pick = e => {
+      if (!S.three || !S.three.screenHits) return null;
+      const r = ren.domElement.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      let best = null, bestDist = Infinity;
+      for (const hh of S.three.screenHits) {
+        const dx = mx - hh.sx, dy = my - hh.sy, rad = hh.rPx + 3;
+        if (dx * dx + dy * dy <= rad * rad && hh.camDist < bestDist) { best = hh.id; bestDist = hh.camDist; }
+      }
+      return best;
+    };
+    ren.domElement.addEventListener("mousedown", e => { drag = true; moved = false; px = e.clientX; py = e.clientY; });
+    window.addEventListener("mouseup", () => { drag = false; });
+    window.addEventListener("mousemove", e => {
+      if (!drag) return;
+      const dx = e.clientX - px, dy = e.clientY - py;
+      if (Math.abs(dx) + Math.abs(dy) > 2) moved = true;
+      grp.rotation.y += dx * 0.0055; grp.rotation.x = Math.max(-0.85, Math.min(0.95, grp.rotation.x + dy * 0.0045));
+      px = e.clientX; py = e.clientY; S.three.dirty = true;
+    });
+    ren.domElement.addEventListener("mousemove", e => {
+      if (drag) { show3dTip(null); return; }
+      const id = pick(e); ren.domElement.style.cursor = id ? "pointer" : "grab";
+      if (id !== S.t3Hover) { S.t3Hover = id; update3dSpotlight(); }
+      show3dTip(id, e.clientX, e.clientY);
+    });
+    ren.domElement.addEventListener("mouseleave", () => { if (S.t3Hover) { S.t3Hover = null; update3dSpotlight(); } show3dTip(null); });
+    ren.domElement.addEventListener("wheel", e => { e.preventDefault(); cam.position.z = Math.max(120, Math.min(680, cam.position.z + e.deltaY * 0.22)); S.three.dirty = true; }, { passive: false });
+    ren.domElement.addEventListener("click", e => { if (moved) return; const id = pick(e); if (id) setFocus(id); });
+    ren.domElement.addEventListener("dblclick", e => { const id = pick(e); if (id) on3dNodeDblClick(id); });
+    window.addEventListener("resize", () => {
+      if (!S.three || !is3dActive()) return;
+      const w = mount.clientWidth || 680, hh = mount.clientHeight || 460;
+      cam.aspect = w / hh; cam.updateProjectionMatrix(); ren.setSize(w, hh); S.three.dirty = true;
+    });
+    S.three = { scene, cam, ren, grp, meshes: [], lines: [], labelItems: [], screenHits: [], pos: {}, halo: null, dirty: true };
+    (function loop() {
+      requestAnimationFrame(loop);
+      if (is3dActive() && S.three && S.three.dirty) { S.three.dirty = false; ren.render(scene, cam); project3dLabels(); }
+    })();
+  }
+  const W = mount.clientWidth || 680, H = mount.clientHeight || 460;
+  S.three.cam.aspect = W / H; S.three.cam.updateProjectionMatrix(); S.three.ren.setSize(W, H);
+  const { grp } = S.three;
+  while (grp.children.length) grp.remove(grp.children[0]);
+  lblRoot.innerHTML = "";
+  S.three.meshes = []; S.three.lines = []; S.three.labelItems = [];
+  const pos = compute3dPositions(); S.three.pos = pos;
+
+  // Draw 4 Horizontal Architectural Deck Rings + Sector Quadrant Crosshairs
+  const ringCol = S.theme === "dark" ? 0x334155 : 0xcbc8bc;
+  [[108, 38], [38, 86], [-34, 128], [-106, 162]].forEach(([yy, rr], idx) => {
+    const pts = [];
+    for (let k = 0; k <= 64; k++) {
+      const a = (k / 64) * Math.PI * 2;
+      pts.push(new THREE.Vector3(rr * Math.cos(a), yy, rr * Math.sin(a)));
+    }
+    grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: ringCol, transparent: true, opacity: 0.42 })));
+    if (idx > 0) {
+      [Math.PI * 0.25, Math.PI * 0.75].forEach(a => {
+        const ax = [new THREE.Vector3(-rr * Math.cos(a), yy, -rr * Math.sin(a)), new THREE.Vector3(rr * Math.cos(a), yy, rr * Math.sin(a))];
+        grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ax), new THREE.LineBasicMaterial({ color: ringCol, transparent: true, opacity: 0.20 })));
+      });
+    }
+  });
+
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloBadgeTexture(), transparent: true, depthTest: false }));
+  halo.visible = false; halo.renderOrder = 2; grp.add(halo); S.three.halo = halo;
+
+  for (const id of h.displayNodeIds) {
+    const n = nm[id] || {}, p = pos[id]; if (!p) continue;
+    const diam = nodeDiam3d(n);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: logoBadgeTexture(n), transparent: true, opacity: 1.0, alphaTest: 0.06 }));
+    sp.position.copy(p); sp.scale.set(diam, diam, 1); sp.userData = { id, diam }; sp.renderOrder = 1;
+    grp.add(sp); S.three.meshes.push(sp);
+
+    const el = document.createElement("div");
+    el.className = "t3-lbl" + (n.isTokenIssuer ? " tok" : n.alphaInQueue ? " drop" : n.m7InQueue ? " m7" : (!n.isBaseHub && (n.poolDropPct || 0) >= hzDropWarnPct(S.h)) ? " drop" : "");
+    const metric = n.isTokenIssuer ? usd(n.exposureUsd) : (!n.isBaseHub && isNum(n.poolDropPct) && n.poolDropPct >= 10) ? `-${pct(n.poolDropPct, 0)}` : usd(n.exposureUsd);
+    const shortName = (n.name || id).length > 15 ? (n.name || id).slice(0, 14) + "…" : (n.name || id);
+    el.innerHTML = `${esc(shortName)}<span class="sub">${esc(metric)}</span>`;
+    el.onclick = ev => { ev.stopPropagation(); setFocus(id); };
+    el.ondblclick = ev => { ev.stopPropagation(); on3dNodeDblClick(id); };
+    el.onmouseenter = ev => { S.t3Hover = id; update3dSpotlight(); show3dTip(id, ev.clientX, ev.clientY); };
+    el.onmouseleave = () => { S.t3Hover = null; update3dSpotlight(); show3dTip(null); };
+    lblRoot.appendChild(el);
+    S.three.labelItems.push({ id, el, w: (shortName.length + metric.length) * 6.3 + 14 });
+  }
+  for (const e of h.displayEdges) {
+    if (!pos[e.source] || !pos[e.target]) continue;
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([pos[e.source], pos[e.target]]), new THREE.LineBasicMaterial({ color: e.keptInPredGraph ? 0xb5b3a8 : 0xe11d48, transparent: true, opacity: 0.30 }));
+    line.userData = e; grp.add(line); S.three.lines.push(line);
+  }
+  if (!S.t3Spot) S.t3Spot = S.focus;
+  update3dSpotlight();
+}
+
+window.addEventListener("DOMContentLoaded", () => init().catch(err => { document.body.insertAdjacentHTML("afterbegin", `<div style="padding:14px;color:var(--red)">加载失败：${esc(err.message)}</div>`); }));
+</script>
+</body>
+</html>
